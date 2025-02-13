@@ -25,8 +25,87 @@ public class UIManager : SingleTonMonoBehaviour<UIManager>
 
             if(transform.childCount == _uiDict.Count)
             {
-                
+                EventHandler.CallAfterRegisterUIManager();
             }
+        }
+    }
+
+    /// <summary>
+    /// UI Manager에 등록된 UIBase를 상속받는 컴포넌트 객체를 리턴한다.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public UIBase GetUICopmonent<T>()
+    {
+        System.Type type = typeof(T);
+        if(_uiDict.TryGetValue(type, out UIBase ui))
+        {
+            return ui;
+        }
+        return null;
+    }
+
+    /// <summary>
+    /// HUD UI를 변경합니다.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    public void ChangeHUDUI<T>() where T : UIHUD
+    {
+        System.Type type = typeof(T);
+        if(_uiDict.TryGetValue(type, out UIBase ui))
+        {
+            if(_currentHUD != null)
+            {
+                _currentHUD.Deactive();
+            }
+
+            GameObject go = ui.gameObject;
+            UIHUD hud = go.GetComponent<UIHUD>();
+            _currentHUD = hud;
+            hud.Active();
+        }
+    }
+
+    /// <summary>
+    /// Popup UI를 켭니다. 이미 켜져있다면, 무시
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    public void ShowPopup<T>() where T : UIPopup
+    {
+        var type = typeof(T);
+        if(_uiDict.TryGetValue(type, out UIBase ui))
+        {
+            GameObject go = ui.gameObject;
+            if(go.TryGetComponent<UIPopup>(out UIPopup popup))
+            {
+                if(!popup.IsActive)
+                {
+                    go.SetActive(true);
+                }
+            }
+        }
+        else
+        {
+            Debug.LogError($"타입 {type}이 등록되지 않았습니다.");
+        }
+    }
+
+    /// <summary>
+    /// Popup UI를 끕니다. 이미 꺼져있으면, 무시
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="popup"></param>
+    public void ClosePopup<T>() where T : UIPopup
+    {
+        var type = typeof(T);
+
+        if( _uiDict.TryGetValue(type,out UIBase ui))
+        {
+            ui.gameObject.SetActive(false);
+        }
+        else
+        {
+            Debug.LogError($"타입 {type}이 등록되지 않았습니다.");
         }
     }
 }
