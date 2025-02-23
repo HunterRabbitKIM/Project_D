@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -14,6 +15,9 @@ public class DialogSystem : MonoBehaviour
 
     private int currentDialogIndex = -1;
     private int currentSpeakerIndex = 0;
+
+    private float typingSpeed = 0.1f;
+    private bool isTypingEffect = false;
 
     private void Awake()
     {
@@ -42,6 +46,17 @@ public class DialogSystem : MonoBehaviour
 
         if(Input.GetMouseButtonDown(0))
         {
+            if(isTypingEffect == true)
+            {
+                isTypingEffect = false;
+
+                StopCoroutine("OnTypingText");
+                speakers[currentSpeakerIndex].textDialogue.text = dialogs[currentDialogIndex].dialogue;
+                speakers[currentSpeakerIndex].objectArrow.SetActive(true);
+
+                return false;
+            }
+
             if(dialogs.Length > currentDialogIndex + 1)
             {
                 SetNextDialog();
@@ -67,7 +82,7 @@ public class DialogSystem : MonoBehaviour
         currentSpeakerIndex = dialogs[currentDialogIndex].speakerIndex;
         SetActiveObjects(speakers[currentSpeakerIndex], true);
         speakers[currentSpeakerIndex].textName.text = dialogs[currentDialogIndex].name;
-        speakers[currentSpeakerIndex].textDialogue.text = dialogs[currentDialogIndex].dialogue;
+        StartCoroutine("OnTypingText");
     }
 
     private void SetActiveObjects(Speaker speaker, bool visible)
@@ -79,8 +94,26 @@ public class DialogSystem : MonoBehaviour
         speaker.objectArrow.SetActive(false);
 
         Color color = speaker.spriteRenderer.color;
-        color.a = visible == true ? 1 : 0.2f;
+        color.a = visible == true ? 1 : 1f;
         speaker.spriteRenderer.color = color;
+    }
+
+    private IEnumerator OnTypingText()
+    {
+        int index = 0;
+        isTypingEffect = true;
+        while(index < dialogs[currentDialogIndex].dialogue.Length)
+        {
+            speakers[currentSpeakerIndex].textDialogue.text = dialogs[currentDialogIndex].dialogue.Substring(0, index);
+
+            index++;
+
+            yield return new WaitForSeconds(typingSpeed);
+        }
+
+        isTypingEffect = false;
+
+        speakers[currentSpeakerIndex].objectArrow.SetActive(true);
     }
 }
 
