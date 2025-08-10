@@ -1,0 +1,121 @@
+{
+"skeleton": {
+	"hash": "njnoDWaiNoo",
+	"spine": "4.2.43",
+	"x": -146.09,
+	"y": -0.54,
+	"width": 313.95,
+	"height": 444.41,
+	"images": "",
+	"audio": "./audio"
+},
+"bones": [
+	{ "name": "root" },
+	{ "name": "Body", "parent": "root", "x": 0.35, "y": 25.88, "color": "76ff00ff" },
+	{
+		"name": "Body2",
+		"parent": "Body",
+		"length": 173.97,
+		"rotation": 88.44,
+		"x": -0.79,
+		"y": 10.28,
+		"color": "6ff407ff"
+	},
+	{
+		"name": "Arm_L",
+		"parent": "Body2",
+		"length": 49.52,
+		"rotation": 157.04,
+		"x": 162.04,
+		"y": 60.57,
+		"color": "d607e9ff"
+	},
+	{
+		"name": "Arm_R",
+		"parent": "Body2",
+		"length": 48.83,
+		"rotation": -149.38,
+		"x": 162.03,
+		"y": -54.89,
+		"color": "d607e9ff"
+	},
+	{
+		"name": "face",
+		"parent": "Body2",
+		"length": 181.88,
+		"rotation": 0.07,
+		"x": 176.32,
+		"y": 0.85,
+		"color": "f1ba41ff"
+	},
+	{
+		"name": "Leg_R",
+		"parent": "Body",
+		"length": 24.56,
+		"rotation": -86.31,
+		"x": 56.13,
+		"y": 7.9,
+		"color": "ea9307ff"
+	},
+	{
+		"name": "Leg_L",
+		"parent": "Body",
+		"length": 28.47,
+		"rotation": -91.59,
+		"x": -55.33,
+		"y": 11.86,
+		"color": "ea9307ff"
+	},
+	{ "name": "Tail", "parent": "Body", "length": 157.51, "rotation": 49.27, "x": 34.78, "y": 45.06 }
+],
+"slots": [
+	{ "name": "Tail", "bone": "Tail", "attachment": "Tail" },
+	{ "name": "Body", "bone": "Body2", "attachment": "Body" },
+	{ "name": "Arm_L", "bone": "Arm_L", "attachment": "Arm_L" },
+	{ "name": "Arm_R", "bone": "Arm_R", "attachment": "Arm_R" },
+	{ "name": "Leg_L", "bone": "Leg_L", "attachment": "Leg_L" },
+	{ "name": "Leg_R", "bone": "Leg_R", "attachment": "Leg_R" },
+	{ "name": "face", "bone": "face", "attachment": "face" }
+],
+"skins": [
+	{
+		"name": "default",
+		"attachments": {
+			"Arm_L": {
+				"Arm_L": { "x": 27.23, "y": 1.35, "rotation": 114.52, "width": 55, "height": 72 }
+			},
+			"Arm_R": {
+				"Arm_R": { "x": 25.95, "y": 1.05, "rotation": 60.95, "width": 55, "height": 72 }
+			},
+			"Body": {
+				"Body": { "x": 91.86, "y": -0.8, "rotation": -88.44, "width": 210, "height": 231 }
+			},
+			"face": {
+				"face": { "x": 110.2, "y": -0.54, "rotation": -88.99, "width": 304, "height": 240 }
+			},
+			"Leg_L": {
+				"Leg_L": { "x": 9.74, "y": 1.62, "rotation": 91.59, "width": 50, "height": 55 }
+			},
+			"Leg_R": {
+				"Leg_R": { "x": 7.4, "y": 0.92, "rotation": 86.31, "width": 50, "height": 54 }
+			},
+			"Tail": {
+				"Tail": { "x": 77.55, "y": 5.75, "rotation": -49.27, "width": 173, "height": 154 }
+			}
+		}
+	}
+],
+"animations": {
+	"animation": {
+		"bones": {
+			"Body2": {
+				"translate": [
+					{},
+					{ "time": 1.3333, "y": -4.5 },
+					{ "time": 2.6667 }
+				]
+			}
+		}
+	}
+}
+}

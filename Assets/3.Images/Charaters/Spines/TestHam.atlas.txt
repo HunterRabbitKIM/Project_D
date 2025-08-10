@@ -1,0 +1,27 @@
+TestHam.png
+	size: 367, 483
+	filter: Linear, Linear
+	pma: true
+Arm_L
+	bounds: 306, 410, 55, 71
+	offsets: 0, 0, 55, 72
+Arm_R
+	bounds: 306, 338, 55, 70
+	offsets: 0, 1, 55, 72
+Body
+	bounds: 2, 2, 208, 230
+	offsets: 1, 1, 210, 231
+Leg_L
+	bounds: 306, 286, 50, 54
+	offsets: 0, 0, 50, 55
+	rotate: 90
+Leg_R
+	bounds: 306, 234, 50, 54
+	rotate: 90
+Tail
+	bounds: 212, 60, 172, 153
+	offsets: 1, 0, 173, 154
+	rotate: 90
+face
+	bounds: 2, 241, 302, 240
+	offsets: 1, 0, 304, 240
