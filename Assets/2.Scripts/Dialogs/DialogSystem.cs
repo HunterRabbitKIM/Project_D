@@ -8,106 +8,300 @@ using Spine.Unity;
 
 public class DialogSystem : MonoBehaviour
 {
-    // [수정] 기존의 dialogs, branches 배열이 제거되고, 시스템 전체를 포괄하는 systems 배열만 남습니다.
-    [SerializeField] private DialogSystemGroup[] systems;
-    // [수정] Speaker[] -> Character[] 이름 변경 및 역할 명확화
-    [SerializeField] private Character[] characters;
-    // [추가] 선택지 UI(버튼 프리팹, 패널)를 관리하기 위한 구조체
-    [SerializeField] private SelectionUI selectionUI;
+    [Header("Database")]
+    [SerializeField] private DialogSystemDataBase database;
 
-    // [추가] Branch 이름을 Key로 하여 빠르게 접근하기 위한 데이터베이스(Dictionary)
-    private Dictionary<string, DialogBranch> branchDatabase = new Dictionary<string, DialogBranch>();
-    private List<DialogBranch> orderedBranches = new List<DialogBranch>();
+    [Header("UI Mode Selection")]
+    [SerializeField] private UIMode uiMode = UIMode.IndividualUI;
 
-    // [추가] 전체 대화 흐름의 활성화 상태를 관리
+    [Header("Individual UI Mode - 각 캐릭터별 독립 UI")]
+    [SerializeField] private CharacterUIComponents[] characterUIComponents;
+
+    [Header("Shared UI Mode - 공유 UI")]
+    [SerializeField] private CharacterVisualComponents[] characterVisuals;
+    [SerializeField] private Image sharedImageDialog;
+    [SerializeField] private TextMeshProUGUI sharedTextName;
+    [SerializeField] private TextMeshProUGUI sharedTextDialogue;
+    [SerializeField] private GameObject sharedObjectArrow;
+
+    [Header("Selection UI Components")]
+    [SerializeField] private Transform selectionPanel;
+    [SerializeField] private GameObject selectionButtonPrefab;
+
+    // 런타임에서 사용할 실제 데이터들
+    private Character[] runtimeCharacters;
+    private SelectionUI runtimeSelectionUI;
+
+    // 런타임 변수들
     private bool isConversationActive = false;
-    // [수정] currentDialogIndex는 이제 전체가 아닌 '현재 Branch 내'에서의 인덱스를 의미합니다.
     private int currentDialogIndex = -1;
     private int currentCharacterIndex = 0;
-    // [추가] 현재 진행 중인 Branch 데이터를 저장하는 변수
     private DialogBranch currentBranch;
 
     private float typingSpeed = 0.1f;
     private bool isTypingEffect = false;
 
+    public DialogSystemDataBase Database
+    {
+        get => database;
+        set => database = value;
+    }
+
     private void Awake()
     {
-        Setup();
-        // [추가] 게임이 시작될 때 모든 Branch 정보를 미리 데이터베이스에 저장합니다.
-        BuildBranchDatabase();
-    }
-
-    private void Setup()
-    {
-        // [수정] speakers -> characters 배열을 사용하도록 변경
-        for (int i = 0; i < characters.Length; ++i)
+        if (database != null)
         {
-            SetActiveObjects(characters[i], false);
-            if (characters[i].spriteRenderer != null)
+            // UI 모드에 따라 다른 방식으로 런타임 데이터 생성
+            if (uiMode == UIMode.IndividualUI)
             {
-                characters[i].spriteRenderer.gameObject.SetActive(true);
+                BuildRuntimeDataFromIndividualUI();
             }
-            if (characters[i].spineSkeletonAnimation != null)
+            else
             {
-                characters[i].spineSkeletonAnimation.gameObject.SetActive(true);
+                BuildRuntimeDataFromSharedUI();
             }
-        }
-        // [추가] 선택지 패널이 존재하면 비활성화
-        if (selectionUI.selectPanel != null)
-        {
-            selectionUI.selectPanel.gameObject.SetActive(false);
-        }
-    }
 
-    // [추가] 에디터에 설정된 모든 Branch를 Dictionary에 저장하여 '이름'으로 빠르게 찾을 수 있도록 준비하는 함수
-    private void BuildBranchDatabase()
-    {
-        branchDatabase.Clear();
-        orderedBranches.Clear();
-        if (systems == null) return;
-        foreach (var system in systems)
-        {
-            foreach (var branch in system.branches)
-            {
-                if (!string.IsNullOrEmpty(branch.branchName) && !branchDatabase.ContainsKey(branch.branchName))
-                {
-                    branchDatabase.Add(branch.branchName, branch);
-                    orderedBranches.Add(branch);
-                }
-                else
-                {
-                    Debug.LogWarning($"중복되거나 비어있는 Branch 이름이 있습니다: '{branch.branchName}'. 이 Branch는 무시됩니다.");
-                }
-            }
-        }
-    }
-
-    // [추가] DialogSystemTrigger에서 대화를 시작하기 위해 호출하는 진입점 함수
-    public void StartConversation()
-    {
-        // [추가] 혹시 모를 에디터 변경에 대비해 데이터베이스를 다시 빌드
-        BuildBranchDatabase();
-
-        // [수정] 첫 번째 시스템의 첫 번째 Branch를 시작으로 대화를 개시
-        if (orderedBranches.Count > 0)
-        {
-            isConversationActive = true;
-            StartBranch(orderedBranches[0].branchName);
+            Setup();
+            database.BuildBranchDatabase();
         }
         else
         {
-            Debug.LogError("DialogSystem에 정의된 System 또는 Branch가 없습니다.");
+            Debug.LogError("DialogSystemDataBase가 할당되지 않았습니다!");
+        }
+    }
+
+    // 개별 UI 방식
+    private void BuildRuntimeDataFromIndividualUI()
+    {
+        if (characterUIComponents != null && characterUIComponents.Length > 0)
+        {
+            runtimeCharacters = new Character[characterUIComponents.Length];
+
+            for (int i = 0; i < characterUIComponents.Length; i++)
+            {
+                Character character = new Character();
+
+                // 각 캐릭터별 독립적인 UI 컴포넌트
+                character.spriteRenderer = characterUIComponents[i].spriteRenderer;
+                character.spineSkeletonAnimation = characterUIComponents[i].spineSkeletonAnimation;
+                character.imageDialog = characterUIComponents[i].imageDialog;
+                character.textName = characterUIComponents[i].textName;
+                character.textDialogue = characterUIComponents[i].textDialogue;
+                character.objectArrow = characterUIComponents[i].objectArrow;
+
+                runtimeCharacters[i] = character;
+
+                Debug.Log($"Individual UI - Character {i} ({characterUIComponents[i].characterName}) 할당 완료: " +
+                         $"ImageDialog={character.imageDialog != null}, " +
+                         $"TextName={character.textName != null}, " +
+                         $"TextDialogue={character.textDialogue != null}");
+            }
+        }
+        else
+        {
+            Debug.LogError("Individual UI Mode: Character UI Components가 할당되지 않았습니다!");
+        }
+    }
+
+    // 공유 UI 방식
+    private void BuildRuntimeDataFromSharedUI()
+    {
+        if (characterVisuals != null && characterVisuals.Length > 0)
+        {
+            runtimeCharacters = new Character[characterVisuals.Length];
+
+            for (int i = 0; i < characterVisuals.Length; i++)
+            {
+                Character character = new Character();
+
+                // 각 캐릭터별 비주얼 컴포넌트
+                character.spriteRenderer = characterVisuals[i].spriteRenderer;
+                character.spineSkeletonAnimation = characterVisuals[i].spineSkeletonAnimation;
+
+                // 공유 UI 컴포넌트 (모든 캐릭터가 같은 UI 사용)
+                character.imageDialog = sharedImageDialog;
+                character.textName = sharedTextName;
+                character.textDialogue = sharedTextDialogue;
+                character.objectArrow = sharedObjectArrow;
+
+                runtimeCharacters[i] = character;
+
+                Debug.Log($"Shared UI - Character {i} ({characterVisuals[i].characterName}) 할당 완료");
+            }
+        }
+        else
+        {
+            Debug.LogError("Shared UI Mode: Character Visual Components가 할당되지 않았습니다!");
+        }
+    }
+
+    // Setup 메서드 수정 (디버깅 강화)
+    private void Setup()
+    {
+        if (runtimeCharacters == null)
+        {
+            Debug.LogWarning("RuntimeCharacters가 null입니다.");
+            return;
+        }
+
+        Debug.Log($"Setup 시작: UI Mode = {uiMode}");
+
+        if (uiMode == UIMode.IndividualUI)
+        {
+            // 개별 UI 모드
+            for (int i = 0; i < runtimeCharacters.Length; i++)
+            {
+                SetActiveObjects(runtimeCharacters[i], false);
+
+                if (runtimeCharacters[i].spriteRenderer != null)
+                {
+                    runtimeCharacters[i].spriteRenderer.gameObject.SetActive(true);
+                    Color color = runtimeCharacters[i].spriteRenderer.color;
+                    color.a = 0.5f;
+                    runtimeCharacters[i].spriteRenderer.color = color;
+                }
+
+                if (runtimeCharacters[i].spineSkeletonAnimation != null)
+                {
+                    runtimeCharacters[i].spineSkeletonAnimation.gameObject.SetActive(true);
+                    if (runtimeCharacters[i].spineSkeletonAnimation.skeleton != null)
+                    {
+                        Color color = runtimeCharacters[i].spineSkeletonAnimation.skeleton.GetColor();
+                        color.a = 0.5f;
+                        runtimeCharacters[i].spineSkeletonAnimation.skeleton.SetColor(color);
+                    }
+                }
+            }
+        }
+        else
+        {
+            // 공유 UI 모드
+            Debug.Log($"공유 UI 컴포넌트 상태 확인:");
+            Debug.Log($"  sharedImageDialog: {sharedImageDialog != null} ({sharedImageDialog?.name})");
+            Debug.Log($"  sharedTextName: {sharedTextName != null} ({sharedTextName?.name})");
+            Debug.Log($"  sharedTextDialogue: {sharedTextDialogue != null} ({sharedTextDialogue?.name})");
+            Debug.Log($"  sharedObjectArrow: {sharedObjectArrow != null} ({sharedObjectArrow?.name})");
+
+            // 공유 UI 초기 상태 설정 - 일단 켜둠 (테스트용)
+            if (sharedImageDialog != null)
+            {
+                sharedImageDialog.gameObject.SetActive(true);
+                Debug.Log($"sharedImageDialog 활성화: {sharedImageDialog.gameObject.activeSelf}");
+            }
+            else
+            {
+                Debug.LogError("sharedImageDialog가 null입니다! 인스펙터에서 할당해주세요.");
+            }
+
+            if (sharedTextName != null)
+            {
+                sharedTextName.gameObject.SetActive(true);
+                sharedTextName.text = "테스트 이름";
+                Debug.Log($"sharedTextName 활성화: {sharedTextName.gameObject.activeSelf}");
+            }
+            else
+            {
+                Debug.LogError("sharedTextName이 null입니다! 인스펙터에서 할당해주세요.");
+            }
+
+            if (sharedTextDialogue != null)
+            {
+                sharedTextDialogue.gameObject.SetActive(true);
+                sharedTextDialogue.text = "테스트 대사";
+                Debug.Log($"sharedTextDialogue 활성화: {sharedTextDialogue.gameObject.activeSelf}");
+            }
+            else
+            {
+                Debug.LogError("sharedTextDialogue가 null입니다! 인스펙터에서 할당해주세요.");
+            }
+
+            if (sharedObjectArrow != null)
+            {
+                sharedObjectArrow.SetActive(false); // 화살표는 처음에 숨김
+            }
+
+            // 각 캐릭터의 스프라이트 설정
+            if (characterVisuals != null)
+            {
+                for (int i = 0; i < characterVisuals.Length; i++)
+                {
+                    if (characterVisuals[i].spriteRenderer != null)
+                    {
+                        characterVisuals[i].spriteRenderer.gameObject.SetActive(true);
+                        Color color = characterVisuals[i].spriteRenderer.color;
+                        color.a = 0.5f;
+                        characterVisuals[i].spriteRenderer.color = color;
+                        Debug.Log($"Character {i} 스프라이트 설정 완료");
+                    }
+
+                    if (characterVisuals[i].spineSkeletonAnimation != null)
+                    {
+                        characterVisuals[i].spineSkeletonAnimation.gameObject.SetActive(true);
+                        if (characterVisuals[i].spineSkeletonAnimation.skeleton != null)
+                        {
+                            Color color = characterVisuals[i].spineSkeletonAnimation.skeleton.GetColor();
+                            color.a = 0.5f;
+                            characterVisuals[i].spineSkeletonAnimation.skeleton.SetColor(color);
+                        }
+                        Debug.Log($"Character {i} Spine 애니메이션 설정 완료");
+                    }
+                }
+            }
+        }
+
+        runtimeSelectionUI = new SelectionUI();
+        runtimeSelectionUI.selectPanel = selectionPanel;
+        runtimeSelectionUI.selectButtonPrefab = selectionButtonPrefab;
+
+        if (runtimeSelectionUI.selectPanel != null)
+        {
+            runtimeSelectionUI.selectPanel.gameObject.SetActive(false);
+            Debug.Log("Selection Panel 숨김 처리 완료");
+        }
+
+        Debug.Log($"Setup 완료: {uiMode} 모드로 초기화");
+    }
+
+    public void StartConversation()
+    {
+        if (database == null)
+        {
+            Debug.LogError("Database가 설정되지 않았습니다!");
+            return;
+        }
+
+        // 런타임 데이터가 없으면 다시 생성
+        if (runtimeCharacters == null)
+        {
+            if (uiMode == UIMode.IndividualUI)
+            {
+                BuildRuntimeDataFromIndividualUI();
+            }
+            else
+            {
+                BuildRuntimeDataFromSharedUI();
+            }
+        }
+
+        database.BuildBranchDatabase();
+
+        if (database.OrderedBranches.Count > 0)
+        {
+            isConversationActive = true;
+            StartBranch(database.OrderedBranches[0].branchName);
+        }
+        else
+        {
+            Debug.LogError("DialogSystemDataBase에 정의된 System 또는 Branch가 없습니다.");
             isConversationActive = false;
         }
     }
 
-    // [추가] 특정 이름의 Branch를 찾아 대화를 시작하는 함수
     private void StartBranch(string branchName)
     {
-        // [추가] 데이터베이스에서 branchName을 Key로 하여 해당하는 Branch 정보를 찾아 currentBranch에 할당
-        if (branchDatabase.TryGetValue(branchName, out currentBranch))
+        if (database.BranchDatabase.TryGetValue(branchName, out currentBranch))
         {
-            currentDialogIndex = -1; // 새 Branch가 시작되므로 다이얼로그 인덱스 초기화
+            currentDialogIndex = -1;
             SetNextDialog();
         }
         else
@@ -117,119 +311,138 @@ public class DialogSystem : MonoBehaviour
         }
     }
 
-    // [수정] 대화 진행 로직을 Branch 기반으로 전면 수정
     public bool UpdateDialog()
     {
-        if (!isConversationActive) return true; // 대화가 비활성화 상태면 종료되었음을 Trigger에 알림 (true 반환)
+        if (!isConversationActive) return true;
 
         if (Input.GetMouseButtonDown(0))
         {
-            // [추가] 선택지가 활성화된 상태에서는 마우스 클릭으로 대화를 넘기지 않음
-            if (selectionUI.selectPanel != null && selectionUI.selectPanel.gameObject.activeSelf) return false;
+            if (runtimeSelectionUI.selectPanel != null && runtimeSelectionUI.selectPanel.gameObject.activeSelf)
+                return false;
 
             if (isTypingEffect)
             {
                 isTypingEffect = false;
                 StopCoroutine("OnTypingText");
-                characters[currentCharacterIndex].textDialogue.text = currentBranch.dialogs[currentDialogIndex].dialogue;
-                characters[currentCharacterIndex].objectArrow.SetActive(true);
+                if (runtimeCharacters != null && currentCharacterIndex < runtimeCharacters.Length &&
+                    runtimeCharacters[currentCharacterIndex].textDialogue != null)
+                {
+                    runtimeCharacters[currentCharacterIndex].textDialogue.text = currentBranch.dialogs[currentDialogIndex].dialogue;
+                    runtimeCharacters[currentCharacterIndex].objectArrow?.SetActive(true);
+                }
                 return false;
             }
 
-            // [수정] 현재 Branch의 다이얼로그가 더 남아있는지 확인
             if (currentDialogIndex + 1 < currentBranch.dialogs.Length)
             {
                 SetNextDialog();
             }
-            else // [수정] 현재 Branch의 마지막 다이얼로그가 끝났을 때
+            else
             {
-                // [추가] 현재 Branch에 선택지가 있는지 확인
                 if (currentBranch.choices != null && currentBranch.choices.Length > 0)
                 {
-                    ShowChoices(); // 선택지 표시
+                    ShowChoices();
                 }
-                else if(!string.IsNullOrEmpty(currentBranch.autoNextBranchName))
+                else if (!string.IsNullOrEmpty(currentBranch.autoNextBranchName))
                 {
                     StartBranch(currentBranch.autoNextBranchName);
                 }
                 else
                 {
-                    // 현재 Branch가 orderedBranches 리스트의 몇 번째에 있는지 찾습니다.
-                    int currentIndex = orderedBranches.FindIndex(b => b.branchName == currentBranch.branchName);
-                    
-                    // 현재 Branch를 찾았고, 마지막 Branch가 아니라면
-                    if (currentIndex != -1 && currentIndex < orderedBranches.Count - 1)
+                    int currentIndex = database.OrderedBranches.FindIndex(b => b.branchName == currentBranch.branchName);
+
+                    if (currentIndex != -1 && currentIndex < database.OrderedBranches.Count - 1)
                     {
-                        // 다음 순서의 Branch를 실행합니다.
-                        StartBranch(orderedBranches[currentIndex + 1].branchName);
+                        StartBranch(database.OrderedBranches[currentIndex + 1].branchName);
                     }
-                    else // 마지막 Branch이거나, 어떤 이유로든 리스트에서 찾지 못했다면
+                    else
                     {
-                        EndDialog(); // 대화를 종료합니다.
+                        EndDialog();
                     }
                 }
             }
         }
-        return !isConversationActive; // 대화가 아직 진행 중이면 false, EndDialog로 종료됐으면 true 반환
+        return !isConversationActive;
     }
 
-    // [수정] 'currentBranch'에서 다음 다이얼로그 정보를 가져오도록 수정
     private void SetNextDialog()
     {
-        // 다음 대사로 인덱스를 넘깁니다.
         currentDialogIndex++;
-        // 이번에 말할 캐릭터가 누구인지 인덱스를 가져옵니다.
         int newSpeakerIndex = currentBranch.dialogs[currentDialogIndex].speakerIndex;
 
-        // 모든 캐릭터를 순회하면서
-        for (int i = 0; i < characters.Length; i++)
+        if (runtimeCharacters == null || newSpeakerIndex >= runtimeCharacters.Length)
         {
-            // 현재 순회중인 캐릭터(i)가 이번에 말할 캐릭터(newSpeakerIndex)인지 확인합니다.
-            bool isActiveSpeaker = (i == newSpeakerIndex);
-            // 말할 캐릭터이면 대화창을 켜고(true), 아니라면 끕니다(false).
-            // 이렇게 하면 항상 단 한 명의 대화창만 켜지는 것이 보장됩니다.
-            SetActiveObjects(characters[i], isActiveSpeaker);
+            Debug.LogError($"Invalid speaker index: {newSpeakerIndex}. RuntimeCharacters length: {runtimeCharacters?.Length ?? 0}");
+            return;
         }
 
-        // 현재 대사를 말하는 캐릭터의 인덱스를 저장합니다.
+        for (int i = 0; i < runtimeCharacters.Length; i++)
+        {
+            bool isActiveSpeaker = (i == newSpeakerIndex);
+            SetActiveObjects(runtimeCharacters[i], isActiveSpeaker);
+        }
+
         currentCharacterIndex = newSpeakerIndex;
 
-        // 이름과 대사를 설정하고 타이핑 효과를 시작합니다.
-        characters[currentCharacterIndex].textName.text = currentBranch.dialogs[currentDialogIndex].name;
+        if (runtimeCharacters[currentCharacterIndex].textName != null)
+        {
+            runtimeCharacters[currentCharacterIndex].textName.text = currentBranch.dialogs[currentDialogIndex].name;
+        }
+
         StartCoroutine("OnTypingText");
     }
 
-    // [추가] 선택지를 화면에 동적으로 생성하고 표시하는 함수
     private void ShowChoices()
     {
-        if (currentCharacterIndex >= 0 && characters.Length > currentCharacterIndex)
+        if (currentCharacterIndex >= 0 && runtimeCharacters != null &&
+            runtimeCharacters.Length > currentCharacterIndex)
         {
-            SetActiveObjects(characters[currentCharacterIndex], false); // 마지막 대화창 숨기기
+            SetActiveObjects(runtimeCharacters[currentCharacterIndex], false);
         }
 
-        selectionUI.selectPanel.gameObject.SetActive(true); // 선택지 패널 활성화
+        if (runtimeSelectionUI.selectPanel == null)
+        {
+            Debug.LogError("SelectPanel이 null입니다. Selection Panel을 확인해주세요.");
+            return;
+        }
 
-        // 이전에 생성된 버튼이 있다면 모두 삭제
-        foreach (Transform child in selectionUI.selectPanel)
+        runtimeSelectionUI.selectPanel.gameObject.SetActive(true);
+
+        foreach (Transform child in runtimeSelectionUI.selectPanel)
         {
             Destroy(child.gameObject);
         }
 
-        // 현재 Branch의 모든 선택지에 대해 버튼 생성
+        if (runtimeSelectionUI.selectButtonPrefab == null)
+        {
+            Debug.LogError("SelectButtonPrefab이 null입니다. Selection Button Prefab을 확인해주세요.");
+            return;
+        }
+
         foreach (var choice in currentBranch.choices)
         {
-            GameObject buttonGO = Instantiate(selectionUI.selectButtonPrefab, selectionUI.selectPanel);
-            buttonGO.GetComponentInChildren<TextMeshProUGUI>().text = choice.text;
-            // 각 버튼에 클릭 이벤트를 연결. 클릭 시 OnChoiceSelected 함수가 'nextBranchName'과 함께 호출됨
-            buttonGO.GetComponent<Button>().onClick.AddListener(() => OnChoiceSelected(choice.nextBranchName));
+            GameObject buttonGO = Instantiate(runtimeSelectionUI.selectButtonPrefab, runtimeSelectionUI.selectPanel);
+            var textComponent = buttonGO.GetComponentInChildren<TextMeshProUGUI>();
+            if (textComponent != null)
+            {
+                textComponent.text = choice.text;
+            }
+
+            var buttonComponent = buttonGO.GetComponent<Button>();
+            if (buttonComponent != null)
+            {
+                buttonComponent.onClick.AddListener(() => OnChoiceSelected(choice.nextBranchName));
+            }
         }
     }
 
-    // [추가] 선택지 버튼을 클릭했을 때 호출되는 함수
     private void OnChoiceSelected(string nextBranchName)
     {
-        selectionUI.selectPanel.gameObject.SetActive(false); // 선택지 패널 비활성화
-        // [추가] 연결될 Branch 이름이 비어있으면 대화 종료, 있으면 해당 Branch 시작
+        if (runtimeSelectionUI.selectPanel != null)
+        {
+            runtimeSelectionUI.selectPanel.gameObject.SetActive(false);
+        }
+
         if (string.IsNullOrEmpty(nextBranchName))
         {
             EndDialog();
@@ -239,86 +452,248 @@ public class DialogSystem : MonoBehaviour
             StartBranch(nextBranchName);
         }
     }
-    
-    // [수정] 매개변수 타입을 Speaker에서 Character로 변경
+
     private void SetActiveObjects(Character character, bool visible)
+{
+    if (uiMode == UIMode.IndividualUI)
     {
+        // 개별 UI 모드: 각 캐릭터의 UI를 개별적으로 제어
         if (character.imageDialog != null)
+        {
             character.imageDialog.gameObject.SetActive(visible);
-    
+            Debug.Log($"Individual UI - ImageDialog 활성화: {visible}");
+        }
+
         if (character.textName != null)
             character.textName.gameObject.SetActive(visible);
-    
+
         if (character.textDialogue != null)
             character.textDialogue.gameObject.SetActive(visible);
-    
+
         if (character.objectArrow != null)
             character.objectArrow.SetActive(false);
 
+        // 스프라이트 투명도 조절
         if (character.spriteRenderer != null)
         {
             Color color = character.spriteRenderer.color;
-            color.a = visible ? 1f : 0.5f; // 비활성 캐릭터는 약간 투명하게 처리
+            color.a = visible ? 1f : 0.5f;
             character.spriteRenderer.color = color;
         }
 
-        if(character.spineSkeletonAnimation != null && character.spineSkeletonAnimation.skeleton != null)
+        if (character.spineSkeletonAnimation != null && character.spineSkeletonAnimation.skeleton != null)
         {
             Color color = character.spineSkeletonAnimation.skeleton.GetColor();
             color.a = visible ? 1f : 0.5f;
             character.spineSkeletonAnimation.skeleton.SetColor(color);
         }
     }
-
-    // [수정] 대화 종료 시 모든 캐릭터 UI를 비활성화하고 상태 플래그를 변경
-    private void EndDialog()
+    else
     {
-        foreach (var character in characters)
+        // 공유 UI 모드: 오직 활성 화자일 때만 UI 제어
+        if (visible) // 활성 화자일 때만 UI를 켬
         {
-            SetActiveObjects(character, false);
-            if (character.spriteRenderer != null)
+            Debug.Log($"Shared UI - 활성 화자 설정: Character Index {currentCharacterIndex}");
+            
+            if (sharedImageDialog != null)
             {
-                Color color = character.spriteRenderer.color;
-                color.a = 1f;
-                character.spriteRenderer.color = color;
+                sharedImageDialog.gameObject.SetActive(true);
+                Debug.Log($"Shared UI - ImageDialog 활성화: True");
             }
-            if (character.spineSkeletonAnimation != null && character.spineSkeletonAnimation.skeleton != null)
+
+            if (sharedTextName != null)
             {
-                Color color = character.spineSkeletonAnimation.skeleton.GetColor();
-                color.a = 1f;
-                character.spineSkeletonAnimation.skeleton.SetColor(color);
+                sharedTextName.gameObject.SetActive(true);
+                Debug.Log($"Shared UI - TextName 활성화: True");
+            }
+
+            if (sharedTextDialogue != null)
+            {
+                sharedTextDialogue.gameObject.SetActive(true);
+                Debug.Log($"Shared UI - TextDialogue 활성화: True");
+            }
+
+            if (sharedObjectArrow != null)
+                sharedObjectArrow.SetActive(false);
+        }
+
+        // 모든 캐릭터 스프라이트 투명도 조절
+        if (characterVisuals != null)
+        {
+            for (int i = 0; i < characterVisuals.Length; i++)
+            {
+                bool isCurrentSpeaker = (i == currentCharacterIndex);
+
+                if (characterVisuals[i].spriteRenderer != null)
+                {
+                    Color color = characterVisuals[i].spriteRenderer.color;
+                    color.a = isCurrentSpeaker ? 1f : 0.5f;
+                    characterVisuals[i].spriteRenderer.color = color;
+                }
+
+                if (characterVisuals[i].spineSkeletonAnimation != null &&
+                    characterVisuals[i].spineSkeletonAnimation.skeleton != null)
+                {
+                    Color color = characterVisuals[i].spineSkeletonAnimation.skeleton.GetColor();
+                    color.a = isCurrentSpeaker ? 1f : 0.5f;
+                    characterVisuals[i].spineSkeletonAnimation.skeleton.SetColor(color);
+                }
             }
         }
+    }
+}
+
+    private void EndDialog()
+    {
+        if (runtimeCharacters != null)
+        {
+            foreach (var character in runtimeCharacters)
+            {
+                SetActiveObjects(character, false);
+                if (character.spriteRenderer != null)
+                {
+                    Color color = character.spriteRenderer.color;
+                    color.a = 1f;
+                    character.spriteRenderer.color = color;
+                }
+                if (character.spineSkeletonAnimation != null && character.spineSkeletonAnimation.skeleton != null)
+                {
+                    Color color = character.spineSkeletonAnimation.skeleton.GetColor();
+                    color.a = 1f;
+                    character.spineSkeletonAnimation.skeleton.SetColor(color);
+                }
+            }
+        }
+
+        // 공유 UI 모드일 때 추가로 캐릭터 비주얼 초기화
+        if (uiMode == UIMode.SharedUI && characterVisuals != null)
+        {
+            for (int i = 0; i < characterVisuals.Length; i++)
+            {
+                if (characterVisuals[i].spriteRenderer != null)
+                {
+                    Color color = characterVisuals[i].spriteRenderer.color;
+                    color.a = 1f;
+                    characterVisuals[i].spriteRenderer.color = color;
+                }
+
+                if (characterVisuals[i].spineSkeletonAnimation != null &&
+                    characterVisuals[i].spineSkeletonAnimation.skeleton != null)
+                {
+                    Color color = characterVisuals[i].spineSkeletonAnimation.skeleton.GetColor();
+                    color.a = 1f;
+                    characterVisuals[i].spineSkeletonAnimation.skeleton.SetColor(color);
+                }
+            }
+        }
+
         isConversationActive = false;
         Debug.Log("대화 흐름 종료.");
     }
-    
-    // [수정] 'dialogs' 배열 대신 'currentBranch.dialogs'에서 정보를 가져오도록 수정
+
     private IEnumerator OnTypingText()
     {
         int index = 0;
         isTypingEffect = true;
-        
-        string dialogueText = currentBranch.dialogs[currentDialogIndex].dialogue;
-        characters[currentCharacterIndex].textDialogue.text = "";
 
-        while (index < dialogueText.Length)
+        string dialogueText = currentBranch.dialogs[currentDialogIndex].dialogue;
+
+        if (runtimeCharacters != null && currentCharacterIndex < runtimeCharacters.Length &&
+            runtimeCharacters[currentCharacterIndex].textDialogue != null)
         {
-            if (!isTypingEffect) 
+            runtimeCharacters[currentCharacterIndex].textDialogue.text = "";
+
+            while (index < dialogueText.Length)
             {
-                yield break;
+                if (!isTypingEffect)
+                {
+                    yield break;
+                }
+                runtimeCharacters[currentCharacterIndex].textDialogue.text += dialogueText[index];
+                index++;
+                yield return new WaitForSeconds(typingSpeed);
             }
-            characters[currentCharacterIndex].textDialogue.text += dialogueText[index];
-            index++;
-            yield return new WaitForSeconds(typingSpeed);
+
+            isTypingEffect = false;
+            runtimeCharacters[currentCharacterIndex].objectArrow?.SetActive(true);
+        }
+    }
+
+    // 디버깅용 메서드
+    [ContextMenu("Debug Runtime Data")]
+    public void DebugRuntimeData()
+    {
+        Debug.Log($"=== Runtime Data Debug ===");
+        Debug.Log($"Database: {database != null}");
+        Debug.Log($"UI Mode: {uiMode}");
+
+        if (uiMode == UIMode.IndividualUI)
+        {
+            Debug.Log($"Individual UI Components: {characterUIComponents?.Length ?? 0}");
+            if (characterUIComponents != null)
+            {
+                for (int i = 0; i < characterUIComponents.Length; i++)
+                {
+                    var comp = characterUIComponents[i];
+                    Debug.Log($"  Character {i} ({comp.characterName}): " +
+                             $"ImageDialog={comp.imageDialog != null}, " +
+                             $"TextName={comp.textName != null}, " +
+                             $"TextDialogue={comp.textDialogue != null}");
+                }
+            }
+        }
+        else
+        {
+            Debug.Log($"Character Visuals: {characterVisuals?.Length ?? 0}");
+            Debug.Log($"Shared UI: ImageDialog={sharedImageDialog != null}, " +
+                     $"TextName={sharedTextName != null}, " +
+                     $"TextDialogue={sharedTextDialogue != null}");
         }
 
-        isTypingEffect = false;
-        characters[currentCharacterIndex].objectArrow.SetActive(true);
+        Debug.Log($"RuntimeCharacters: {runtimeCharacters?.Length ?? 0}");
+        Debug.Log($"Selection Panel: {selectionPanel != null}");
+        Debug.Log($"Selection Button Prefab: {selectionButtonPrefab != null}");
     }
 }
 
-// [수정] 명확성을 위해 Speaker 구조체 이름을 Character로 변경
+// UI 모드 열거형
+public enum UIMode
+{
+    IndividualUI,  // 각 캐릭터별 독립 UI (2개 대화창)
+    SharedUI       // 공유 UI (1개 대화창)
+}
+
+// 개별 UI용 구조체
+[System.Serializable]
+public struct CharacterUIComponents
+{
+    [Header("Character Info")]
+    public string characterName;
+
+    [Header("Visual Components")]
+    public SpriteRenderer spriteRenderer;
+    public SkeletonMecanim spineSkeletonAnimation;
+
+    [Header("UI Components")]
+    public Image imageDialog;
+    public TextMeshProUGUI textName;
+    public TextMeshProUGUI textDialogue;
+    public GameObject objectArrow;
+}
+
+// 공유 UI용 구조체
+[System.Serializable]
+public struct CharacterVisualComponents
+{
+    [Header("Character Info")]
+    public string characterName;
+
+    [Header("Visual Components Only")]
+    public SpriteRenderer spriteRenderer;
+    public SkeletonMecanim spineSkeletonAnimation;
+}
+
+// 기존 구조체들은 그대로 유지
 [System.Serializable]
 public struct Character
 {
@@ -339,7 +714,6 @@ public struct DialogDate
     public string dialogue;
 }
 
-// [추가] 선택지 데이터를 담을 구조체. 선택지 텍스트와, 이 선택지를 골랐을 때 넘어갈 다음 Branch의 '이름'을 가짐
 [System.Serializable]
 public struct Choice
 {
@@ -347,13 +721,12 @@ public struct Choice
     public string nextBranchName;
 }
 
-// [수정] DialogBranch 구조체에 선택지(Choice) 배열을 추가
 [System.Serializable]
 public struct DialogBranch
 {
     public string branchName;
     public DialogDate[] dialogs;
-    public Choice[] choices; // 이 Branch의 다이얼로그가 모두 끝난 후 표시될 선택지들
+    public Choice[] choices;
     public string autoNextBranchName;
 }
 
@@ -364,7 +737,6 @@ public struct DialogSystemGroup
     public DialogBranch[] branches;
 }
 
-// [추가] 선택지 UI 요소들을 관리하기 위한 구조체
 [System.Serializable]
 public struct SelectionUI
 {
