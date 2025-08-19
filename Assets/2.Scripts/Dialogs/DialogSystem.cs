@@ -5,6 +5,7 @@ using UnityEngine.UI;
 using TMPro;
 using System.Linq;
 using Spine.Unity;
+using UnityEngine.SceneManagement;
 
 public class DialogSystem : MonoBehaviour
 {
@@ -431,26 +432,68 @@ public class DialogSystem : MonoBehaviour
             var buttonComponent = buttonGO.GetComponent<Button>();
             if (buttonComponent != null)
             {
-                buttonComponent.onClick.AddListener(() => OnChoiceSelected(choice.nextBranchName));
+                buttonComponent.onClick.AddListener(() => OnChoiceSelected(choice));
             }
         }
     }
 
-    private void OnChoiceSelected(string nextBranchName)
+    private void OnChoiceSelected(Choice selectedChoice)
     {
         if (runtimeSelectionUI.selectPanel != null)
         {
             runtimeSelectionUI.selectPanel.gameObject.SetActive(false);
         }
 
-        if (string.IsNullOrEmpty(nextBranchName))
+        // 씬 이동이 우선 - 씬 이름이 있으면 씬으로 이동
+        if (!string.IsNullOrEmpty(selectedChoice.nextEndingSceneName))
+        {
+            LoadEndingScene(selectedChoice.nextEndingSceneName);
+        }
+        // 씬 이름이 없을 때만 브랜치 이동
+        else if (!string.IsNullOrEmpty(selectedChoice.nextBranchName))
+        {
+            StartBranch(selectedChoice.nextBranchName);
+        }
+        // 둘 다 없으면 대화 종료
+        else
         {
             EndDialog();
         }
-        else
+    }
+
+    // 씬 이동 메서드 추가
+    private void LoadEndingScene(string sceneName)
+    {
+        Debug.Log($"씬으로 이동합니다: {sceneName}");
+        
+        // 다이얼로그 정리
+        CleanupDialog();
+        
+        // 씬 로드
+        SceneManager.LoadScene(sceneName);
+    }
+
+    // 다이얼로그 정리 메서드 추가
+    private void CleanupDialog()
+    {
+        // UI 정리
+        if (runtimeCharacters != null)
         {
-            StartBranch(nextBranchName);
+            foreach (var character in runtimeCharacters)
+            {
+                SetActiveObjects(character, false);
+            }
         }
+
+        if (runtimeSelectionUI.selectPanel != null)
+        {
+            runtimeSelectionUI.selectPanel.gameObject.SetActive(false);
+        }
+
+        // 상태 초기화
+        isConversationActive = false;
+        
+        Debug.Log("다이얼로그 정리 완료");
     }
 
     private void SetActiveObjects(Character character, bool visible)
@@ -719,6 +762,7 @@ public struct Choice
 {
     public string text;
     public string nextBranchName;
+    public string nextEndingSceneName;
 }
 
 [System.Serializable]

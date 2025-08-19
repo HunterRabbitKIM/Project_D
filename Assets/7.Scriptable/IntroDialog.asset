@@ -44,3 +44,125 @@ MonoBehaviour:
           \uC5B4\uCA5C \uC88B\uC9C0?!)"
       choices: []
       autoNextBranchName: 
+    - branchName: Bella_Intro_Dialog_2
+      dialogs:
+      - speakerIndex: 0
+        name: "\uC720\uC800"
+        dialogue: "\uD5C9! \uBB50.. \uBB50\uC57C!! \uAC11\uC790\uAE30!!"
+      choices: []
+      autoNextBranchName: 
+    - branchName: Bella_Intro_Dialog_2
+      dialogs:
+      - speakerIndex: 1
+        name: "\uACE0\uB9B4\uB77C"
+        dialogue: "\uC6B0! \uC6B0\uC6B0\uC6B0....\n(\uBB50\uC57C! \uBA38\uB9AC\uC5D0
+          \uBD99\uC5B4\uC788\uB358 \uB098\uBB47\uC78E\uC744 \uB5BC\uC8FC\uB824\uACE0.....)"
+      - speakerIndex: 1
+        name: "\uACE0\uB9B4\uB77C"
+        dialogue: "\uC6B0\uAD6C\uAD6C...\n(\uB2E4\uC815\uD574...)"
+      - speakerIndex: 0
+        name: "\uB098\uB808\uC774\uC158"
+        dialogue: "\uBB50\uC57C..\uC7E4 \uC65C \uC800\uB798..?."
+      choices: []
+      autoNextBranchName: 
+    - branchName: Bella_Intro_Dialog_2
+      dialogs:
+      - speakerIndex: 2
+        name: "\uB098\uB808\uC774"
+        dialogue: "\uBB34\uC5B8\uAC00 \uB2E4\uC9D0\uC744 \uD55C \uB4EF \uD45C\uC815\uC744
+          \uAD73\uD788\uBA74 \uACE0\uAC1C\uB97C \uB044\uB355\uC778\uB2E4."
+      - speakerIndex: 1
+        name: "\uACE0\uB9B4\uB77C"
+        dialogue: "\uC6B0\uC6B0! \uC6B0\uD6C4\uD6C4\uD6C4\uAC00\uAC01!\n(\uB0B4\uAC8C
+          \uC774\uB807\uAC8C \uB2E4\uC815\uD55C \uB0A8\uC790\uB294 \uCC98\uC74C\uC774\uC57C!
+          \uB098\uC640 \uAD50\uBBF8\uD558\uC790!)"
+      - speakerIndex: 0
+        name: "\uC720\uC800"
+        dialogue: "\uBCF8\uB2A5\uC801\uC73C\uB85C \uC54C \uC218 \uC788\uB2E4. \uACE0\uB9B4\uB77C\uC758
+          \uBD84\uC704\uAE30\uAC00 \uC2EC\uC0C1\uCE58 \uC54A\uB2E4."
+      choices: []
+      autoNextBranchName: 
+    - branchName: Bella_Intro_Dialog_2
+      dialogs:
+      - speakerIndex: 1
+        name: "\uACE0\uB9B4\uB77C"
+        dialogue: "\uC6B0.... \uC6B0\uC6B1? \uC6B0\uC6B0!! \uC6B0\uC6B0\uC6B0\uD6C5!\n(\uC74C.....
+          \uC124\uB9C8 \uB0B4 \uACE0\uBC31\uC774 \uB108\uBB34 \uAC11\uC791\uC2A4\uB7EC\uC6CC\uC11C
+          \uADF8\uB7F0\uAC00? \uADF8\uB807\uAD70! \uBC18\uC9C0\uAC00 \uC5C6\uC5B4\uC11C
+          \uADF8\uB807\uAD6C\uB098!!)"
+      choices: []
+      autoNextBranchName: 
+    - branchName: Bella_Intro_Dialog_2
+      dialogs:
+      - speakerIndex: 0
+        name: "\uC720\uC800"
+        dialogue: "\uAC11\uC790\uAE30 \uACE0\uB9B4\uAC00 \uC5B4\uB514\uB860\uAC00
+          \uC0AC\uB77C\uC84C\uB2E4. \uB300\uCCB4 \uBB63 \uB54C\uBB38\uC778\uC9C0
+          \uBAB0\uB77C\uB3C4... \uB2E4\uD589\uC774\uB2E4..."
+      - speakerIndex: 0
+        name: "\uC720\uC800"
+        dialogue: "\uADF8\uB098\uC800\uB098 \uBA38\uB9AC\uAC00 \uB108\uBB34 \uC544\uD30C..
+          \uD06C\uC73D.. \uB300\uCCB4 \uB09C \uC5EC\uAE30\uC11C \uBB58 \uD558\uACE0
+          \uC788\uC5C8\uB358\uAC70\uC600\uC9C0? \uC544\uAE4C \uACE0\uB9B4\uB77C\uBE7C\uACE0\uB294
+          \uC544\uBB34\uAC83\uB3C4 \uAE30\uC5B5\uC774 \uB098\uC9C0 \uC54A\uC544!."
+      - speakerIndex: 0
+        name: "\uC720\uC800"
+        dialogue: "\uBA38\uB9AC\uC5D0 \uD070 \uCDA9\uACA9\uC774 \uAC00\uD574\uC84C\uB2E4\uB294
+          \uAC83 \uB9D0\uACE0\uB294 \uC544\uBB34\uAC83\uB3C4 \uAE30\uC5B5\uB098\uB294
+          \uAC8C \uC5C6\uC5B4... \uC2EC\uC9C0\uC5B4 \uB098\uC5D0 \uB300\uD55C \uC815\uBCF4
+          \uC870\uCC28\uB3C4.."
+      - speakerIndex: 0
+        name: "\uC720\uC800"
+        dialogue: "\uADF8\uB7FC \uC870\uAE08 \uC804 \uACE0\uB9B4\uB77C\uB294... \uB0A0
+          \uAD6C\uD574\uC900\uAC74\uAC00? \uC544\uB2C8\uC57C. \uC7A1\uC544\uBA39\uC9C0
+          \uC54A\uACE0 \uADF8\uB0E5 \uB194\uC900 \uAC83\uC5D0 \uAC10\uC0AC\uD558\uC790."
+      - speakerIndex: 0
+        name: "\uC720\uC800"
+        dialogue: "\uB300\uCCB4 \uBB34\uC2A8 \uC774\uC720\uB85C \uB208\uC744 \uB728\uC790\uB9C8\uC790
+          \uADF8 \uACE0\uB9B4\uB77C\uC640 \uB9C8\uC8FC\uCE58\uAC8C \uB41C \uAC83\uC778\uC9C4
+          \uBAA8\uB974\uACA0\uC9C0\uB9CC, \uC801\uC5B4\uB3C4 \uB0B4\uAC8C \uC801\uC758\uB97C
+          \uAC00\uC9C4 \uAC83 \uAC19\uC9C0\uB294 \uC54A\uC558\uC5B4."
+      choices: []
+      autoNextBranchName: 
+    - branchName: Bella_Intro_Dialog_2
+      dialogs:
+      - speakerIndex: 0
+        name: "\uC720\uC800"
+        dialogue: "\uBA3C\uC800 \uC55E\uC73C\uB85C \uBB34\uC5C7\uC744 \uD574\uC57C
+          \uD560\uC9C0 \uACE0\uBBFC\uD574\uBCF4.... \uC7A0\uAE50 \uC800 \uBA40\uB9AC\uC11C
+          \uBA3C\uAC00 \uB2EC\uB824\uACE0 \uC624\uACE0 \uC788\uB294\uB370? \uC800\uAC8C
+          \uBB50\uC57C?"
+      - speakerIndex: 1
+        name: "\uACE0\uB9B4\uB77C"
+        dialogue: "\uC6B0! \uC6B0\uC6B0\uC6B0!!\n(\uB0B4 \uC139\uC2DC!! \uC544\uC9C1
+          \uAE30\uB2E4\uB9AC\uACE0 \uC788\uC5C8\uAD70\uC694!!)"
+      - speakerIndex: 0
+        name: "\uC720\uC800"
+        dialogue: "\uACE0\uB9B4\uB77C\uC796\uC544!! \uC7A0\uB9CC \uB3C4\uB9DD\uAC00\uC57C\uD558\uB098
+          \uBB50 \uC5B4\uB5A1\uD574\uC57C\uD558\uC9C0?! \uADF8\uB7F0\uB370 \uC800
+          \uACE0\uB9B4\uB77C \uC785\uC5D0 \uBB54\uAC00 \uBB3C\uB824 \uC788\uB294
+          \uAC83 \uAC19\uC740\uB370? \uBB50\uC9C0?"
+      choices: []
+      autoNextBranchName: 
+    - branchName: Bella_Intro_Dialog_2
+      dialogs:
+      - speakerIndex: 1
+        name: "\uACE0\uB9B4\uB77C"
+        dialogue: "\uC6B0!!\n(\uB0B4 \uC139\uC2DC!)"
+      - speakerIndex: 0
+        name: "\uC720\uC800"
+        dialogue: ....?
+      - speakerIndex: 0
+        name: "\uC720\uC800"
+        dialogue: "...\uC774\uAC78 \uAC00\uC9C0\uB77C\uACE0?."
+      - speakerIndex: 1
+        name: "\uACE0\uB9B4\uB77C"
+        dialogue: "\uC6B0\uC6B0!!\n(\uAD50\uBBF8!!)"
+      choices:
+      - text: "\uBC18\uC9C0\uB97C \uBC1B\uB294\uB2E4."
+        nextBranchName: 
+        nextEndingSceneName: 
+      - text: "\uC544\uBB34\uB798\uB3C4 \uB290\uB08C\uC774 \uC2F8\uD558\uB2E4. \uB3C4\uB9DD\uCE58\uC790."
+        nextBranchName: 
+        nextEndingSceneName: 
+      autoNextBranchName: 
