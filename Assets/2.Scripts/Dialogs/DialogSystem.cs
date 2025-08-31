@@ -15,10 +15,10 @@ public class DialogSystem : MonoBehaviour
     [Header("UI Mode Selection")]
     [SerializeField] private UIMode uiMode = UIMode.IndividualUI;
 
-    [Header("Individual UI Mode - °¢ Ä³¸¯ÅÍº° µ¶¸³ UI")]
+    [Header("Individual UI Mode - ê° ìºë¦­í„°ë³„ ë…ë¦½ UI")]
     [SerializeField] private CharacterUIComponents[] characterUIComponents;
 
-    [Header("Shared UI Mode - °øÀ¯ UI")]
+    [Header("Shared UI Mode - ê³µìœ  UI")]
     [SerializeField] private CharacterVisualComponents[] characterVisuals;
     [SerializeField] private Image sharedImageDialog;
     [SerializeField] private TextMeshProUGUI sharedTextName;
@@ -29,11 +29,11 @@ public class DialogSystem : MonoBehaviour
     [SerializeField] private Transform selectionPanel;
     [SerializeField] private GameObject selectionButtonPrefab;
 
-    // ·±Å¸ÀÓ¿¡¼­ »ç¿ëÇÒ ½ÇÁ¦ µ¥ÀÌÅÍµé
+    // ëŸ°íƒ€ì„ì—ì„œ ì‚¬ìš©í•  ì‹¤ì œ ë°ì´í„°ë“¤
     private Character[] runtimeCharacters;
     private SelectionUI runtimeSelectionUI;
 
-    // ·±Å¸ÀÓ º¯¼öµé
+    // ëŸ°íƒ€ì„ ë³€ìˆ˜ë“¤
     private bool isConversationActive = false;
     private int currentDialogIndex = -1;
     private int currentCharacterIndex = 0;
@@ -52,7 +52,7 @@ public class DialogSystem : MonoBehaviour
     {
         if (database != null)
         {
-            // UI ¸ğµå¿¡ µû¶ó ´Ù¸¥ ¹æ½ÄÀ¸·Î ·±Å¸ÀÓ µ¥ÀÌÅÍ »ı¼º
+            // UI ëª¨ë“œì— ë”°ë¼ ë‹¤ë¥¸ ë°©ì‹ìœ¼ë¡œ ëŸ°íƒ€ì„ ë°ì´í„° ìƒì„±
             if (uiMode == UIMode.IndividualUI)
             {
                 BuildRuntimeDataFromIndividualUI();
@@ -67,11 +67,11 @@ public class DialogSystem : MonoBehaviour
         }
         else
         {
-            Debug.LogError("DialogSystemDataBase°¡ ÇÒ´çµÇÁö ¾Ê¾Ò½À´Ï´Ù!");
+            Debug.LogError("DialogSystemDataBaseê°€ í• ë‹¹ë˜ì§€ ì•Šì•˜ìŠµë‹ˆë‹¤!");
         }
     }
 
-    // °³º° UI ¹æ½Ä
+    // ê°œë³„ UI ë°©ì‹
     private void BuildRuntimeDataFromIndividualUI()
     {
         if (characterUIComponents != null && characterUIComponents.Length > 0)
@@ -82,7 +82,7 @@ public class DialogSystem : MonoBehaviour
             {
                 Character character = new Character();
 
-                // °¢ Ä³¸¯ÅÍº° µ¶¸³ÀûÀÎ UI ÄÄÆ÷³ÍÆ®
+                // ê° ìºë¦­í„°ë³„ ë…ë¦½ì ì¸ UI ì»´í¬ë„ŒíŠ¸
                 character.spriteRenderer = characterUIComponents[i].spriteRenderer;
                 character.spineSkeletonAnimation = characterUIComponents[i].spineSkeletonAnimation;
                 character.imageDialog = characterUIComponents[i].imageDialog;
@@ -92,7 +92,7 @@ public class DialogSystem : MonoBehaviour
 
                 runtimeCharacters[i] = character;
 
-                Debug.Log($"Individual UI - Character {i} ({characterUIComponents[i].characterName}) ÇÒ´ç ¿Ï·á: " +
+                Debug.Log($"Individual UI - Character {i} ({characterUIComponents[i].characterName}) í• ë‹¹ ì™„ë£Œ: " +
                          $"ImageDialog={character.imageDialog != null}, " +
                          $"TextName={character.textName != null}, " +
                          $"TextDialogue={character.textDialogue != null}");
@@ -100,11 +100,11 @@ public class DialogSystem : MonoBehaviour
         }
         else
         {
-            Debug.LogError("Individual UI Mode: Character UI Components°¡ ÇÒ´çµÇÁö ¾Ê¾Ò½À´Ï´Ù!");
+            Debug.LogError("Individual UI Mode: Character UI Componentsê°€ í• ë‹¹ë˜ì§€ ì•Šì•˜ìŠµë‹ˆë‹¤!");
         }
     }
 
-    // °øÀ¯ UI ¹æ½Ä
+    // ê³µìœ  UI ë°©ì‹
     private void BuildRuntimeDataFromSharedUI()
     {
         if (characterVisuals != null && characterVisuals.Length > 0)
@@ -115,11 +115,11 @@ public class DialogSystem : MonoBehaviour
             {
                 Character character = new Character();
 
-                // °¢ Ä³¸¯ÅÍº° ºñÁÖ¾ó ÄÄÆ÷³ÍÆ®
+                // ê° ìºë¦­í„°ë³„ ë¹„ì£¼ì–¼ ì»´í¬ë„ŒíŠ¸
                 character.spriteRenderer = characterVisuals[i].spriteRenderer;
                 character.spineSkeletonAnimation = characterVisuals[i].spineSkeletonAnimation;
 
-                // °øÀ¯ UI ÄÄÆ÷³ÍÆ® (¸ğµç Ä³¸¯ÅÍ°¡ °°Àº UI »ç¿ë)
+                // ê³µìœ  UI ì»´í¬ë„ŒíŠ¸ (ëª¨ë“  ìºë¦­í„°ê°€ ê°™ì€ UI ì‚¬ìš©)
                 character.imageDialog = sharedImageDialog;
                 character.textName = sharedTextName;
                 character.textDialogue = sharedTextDialogue;
@@ -127,29 +127,29 @@ public class DialogSystem : MonoBehaviour
 
                 runtimeCharacters[i] = character;
 
-                Debug.Log($"Shared UI - Character {i} ({characterVisuals[i].characterName}) ÇÒ´ç ¿Ï·á");
+                Debug.Log($"Shared UI - Character {i} ({characterVisuals[i].characterName}) í• ë‹¹ ì™„ë£Œ");
             }
         }
         else
         {
-            Debug.LogError("Shared UI Mode: Character Visual Components°¡ ÇÒ´çµÇÁö ¾Ê¾Ò½À´Ï´Ù!");
+            Debug.LogError("Shared UI Mode: Character Visual Componentsê°€ í• ë‹¹ë˜ì§€ ì•Šì•˜ìŠµë‹ˆë‹¤!");
         }
     }
 
-    // Setup ¸Ş¼­µå ¼öÁ¤ (µğ¹ö±ë °­È­)
+    // Setup ë©”ì„œë“œ ìˆ˜ì • (ë””ë²„ê¹… ê°•í™”)
     private void Setup()
     {
         if (runtimeCharacters == null)
         {
-            Debug.LogWarning("RuntimeCharacters°¡ nullÀÔ´Ï´Ù.");
+            Debug.LogWarning("RuntimeCharactersê°€ nullì…ë‹ˆë‹¤.");
             return;
         }
 
-        Debug.Log($"Setup ½ÃÀÛ: UI Mode = {uiMode}");
+        Debug.Log($"Setup ì‹œì‘: UI Mode = {uiMode}");
 
         if (uiMode == UIMode.IndividualUI)
         {
-            // °³º° UI ¸ğµå
+            // ê°œë³„ UI ëª¨ë“œ
             for (int i = 0; i < runtimeCharacters.Length; i++)
             {
                 SetActiveObjects(runtimeCharacters[i], false);
@@ -176,52 +176,52 @@ public class DialogSystem : MonoBehaviour
         }
         else
         {
-            // °øÀ¯ UI ¸ğµå
-            Debug.Log($"°øÀ¯ UI ÄÄÆ÷³ÍÆ® »óÅÂ È®ÀÎ:");
+            // ê³µìœ  UI ëª¨ë“œ
+            Debug.Log($"ê³µìœ  UI ì»´í¬ë„ŒíŠ¸ ìƒíƒœ í™•ì¸:");
             Debug.Log($"  sharedImageDialog: {sharedImageDialog != null} ({sharedImageDialog?.name})");
             Debug.Log($"  sharedTextName: {sharedTextName != null} ({sharedTextName?.name})");
             Debug.Log($"  sharedTextDialogue: {sharedTextDialogue != null} ({sharedTextDialogue?.name})");
             Debug.Log($"  sharedObjectArrow: {sharedObjectArrow != null} ({sharedObjectArrow?.name})");
 
-            // °øÀ¯ UI ÃÊ±â »óÅÂ ¼³Á¤ - ÀÏ´Ü ÄÑµÒ (Å×½ºÆ®¿ë)
+            // ê³µìœ  UI ì´ˆê¸° ìƒíƒœ ì„¤ì • - ì¼ë‹¨ ì¼œë‘  (í…ŒìŠ¤íŠ¸ìš©)
             if (sharedImageDialog != null)
             {
                 sharedImageDialog.gameObject.SetActive(true);
-                Debug.Log($"sharedImageDialog È°¼ºÈ­: {sharedImageDialog.gameObject.activeSelf}");
+                Debug.Log($"sharedImageDialog í™œì„±í™”: {sharedImageDialog.gameObject.activeSelf}");
             }
             else
             {
-                Debug.LogError("sharedImageDialog°¡ nullÀÔ´Ï´Ù! ÀÎ½ºÆåÅÍ¿¡¼­ ÇÒ´çÇØÁÖ¼¼¿ä.");
+                Debug.LogError("sharedImageDialogê°€ nullì…ë‹ˆë‹¤! ì¸ìŠ¤í™í„°ì—ì„œ í• ë‹¹í•´ì£¼ì„¸ìš”.");
             }
 
             if (sharedTextName != null)
             {
                 sharedTextName.gameObject.SetActive(true);
-                sharedTextName.text = "Å×½ºÆ® ÀÌ¸§";
-                Debug.Log($"sharedTextName È°¼ºÈ­: {sharedTextName.gameObject.activeSelf}");
+                sharedTextName.text = "í…ŒìŠ¤íŠ¸ ì´ë¦„";
+                Debug.Log($"sharedTextName í™œì„±í™”: {sharedTextName.gameObject.activeSelf}");
             }
             else
             {
-                Debug.LogError("sharedTextNameÀÌ nullÀÔ´Ï´Ù! ÀÎ½ºÆåÅÍ¿¡¼­ ÇÒ´çÇØÁÖ¼¼¿ä.");
+                Debug.LogError("sharedTextNameì´ nullì…ë‹ˆë‹¤! ì¸ìŠ¤í™í„°ì—ì„œ í• ë‹¹í•´ì£¼ì„¸ìš”.");
             }
 
             if (sharedTextDialogue != null)
             {
                 sharedTextDialogue.gameObject.SetActive(true);
-                sharedTextDialogue.text = "Å×½ºÆ® ´ë»ç";
-                Debug.Log($"sharedTextDialogue È°¼ºÈ­: {sharedTextDialogue.gameObject.activeSelf}");
+                sharedTextDialogue.text = "í…ŒìŠ¤íŠ¸ ëŒ€ì‚¬";
+                Debug.Log($"sharedTextDialogue í™œì„±í™”: {sharedTextDialogue.gameObject.activeSelf}");
             }
             else
             {
-                Debug.LogError("sharedTextDialogue°¡ nullÀÔ´Ï´Ù! ÀÎ½ºÆåÅÍ¿¡¼­ ÇÒ´çÇØÁÖ¼¼¿ä.");
+                Debug.LogError("sharedTextDialogueê°€ nullì…ë‹ˆë‹¤! ì¸ìŠ¤í™í„°ì—ì„œ í• ë‹¹í•´ì£¼ì„¸ìš”.");
             }
 
             if (sharedObjectArrow != null)
             {
-                sharedObjectArrow.SetActive(false); // È­»ìÇ¥´Â Ã³À½¿¡ ¼û±è
+                sharedObjectArrow.SetActive(false); // í™”ì‚´í‘œëŠ” ì²˜ìŒì— ìˆ¨ê¹€
             }
 
-            // °¢ Ä³¸¯ÅÍÀÇ ½ºÇÁ¶óÀÌÆ® ¼³Á¤
+            // ê° ìºë¦­í„°ì˜ ìŠ¤í”„ë¼ì´íŠ¸ ì„¤ì •
             if (characterVisuals != null)
             {
                 for (int i = 0; i < characterVisuals.Length; i++)
@@ -232,7 +232,7 @@ public class DialogSystem : MonoBehaviour
                         Color color = characterVisuals[i].spriteRenderer.color;
                         color.a = 0.5f;
                         characterVisuals[i].spriteRenderer.color = color;
-                        Debug.Log($"Character {i} ½ºÇÁ¶óÀÌÆ® ¼³Á¤ ¿Ï·á");
+                        Debug.Log($"Character {i} ìŠ¤í”„ë¼ì´íŠ¸ ì„¤ì • ì™„ë£Œ");
                     }
 
                     if (characterVisuals[i].spineSkeletonAnimation != null)
@@ -244,7 +244,7 @@ public class DialogSystem : MonoBehaviour
                             color.a = 0.5f;
                             characterVisuals[i].spineSkeletonAnimation.skeleton.SetColor(color);
                         }
-                        Debug.Log($"Character {i} Spine ¾Ö´Ï¸ŞÀÌ¼Ç ¼³Á¤ ¿Ï·á");
+                        Debug.Log($"Character {i} Spine ì• ë‹ˆë©”ì´ì…˜ ì„¤ì • ì™„ë£Œ");
                     }
                 }
             }
@@ -257,21 +257,21 @@ public class DialogSystem : MonoBehaviour
         if (runtimeSelectionUI.selectPanel != null)
         {
             runtimeSelectionUI.selectPanel.gameObject.SetActive(false);
-            Debug.Log("Selection Panel ¼û±è Ã³¸® ¿Ï·á");
+            Debug.Log("Selection Panel ìˆ¨ê¹€ ì²˜ë¦¬ ì™„ë£Œ");
         }
 
-        Debug.Log($"Setup ¿Ï·á: {uiMode} ¸ğµå·Î ÃÊ±âÈ­");
+        Debug.Log($"Setup ì™„ë£Œ: {uiMode} ëª¨ë“œë¡œ ì´ˆê¸°í™”");
     }
 
     public void StartConversation()
     {
         if (database == null)
         {
-            Debug.LogError("Database°¡ ¼³Á¤µÇÁö ¾Ê¾Ò½À´Ï´Ù!");
+            Debug.LogError("Databaseê°€ ì„¤ì •ë˜ì§€ ì•Šì•˜ìŠµë‹ˆë‹¤!");
             return;
         }
 
-        // ·±Å¸ÀÓ µ¥ÀÌÅÍ°¡ ¾øÀ¸¸é ´Ù½Ã »ı¼º
+        // ëŸ°íƒ€ì„ ë°ì´í„°ê°€ ì—†ìœ¼ë©´ ë‹¤ì‹œ ìƒì„±
         if (runtimeCharacters == null)
         {
             if (uiMode == UIMode.IndividualUI)
@@ -293,7 +293,7 @@ public class DialogSystem : MonoBehaviour
         }
         else
         {
-            Debug.LogError("DialogSystemDataBase¿¡ Á¤ÀÇµÈ System ¶Ç´Â Branch°¡ ¾ø½À´Ï´Ù.");
+            Debug.LogError("DialogSystemDataBaseì— ì •ì˜ëœ System ë˜ëŠ” Branchê°€ ì—†ìŠµë‹ˆë‹¤.");
             isConversationActive = false;
         }
     }
@@ -307,7 +307,7 @@ public class DialogSystem : MonoBehaviour
         }
         else
         {
-            Debug.LogError($"'{branchName}' Branch¸¦ Ã£À» ¼ö ¾ø½À´Ï´Ù!");
+            Debug.LogError($"'{branchName}' Branchë¥¼ ì°¾ì„ ìˆ˜ ì—†ìŠµë‹ˆë‹¤!");
             EndDialog();
         }
     }
@@ -403,7 +403,7 @@ public class DialogSystem : MonoBehaviour
 
         if (runtimeSelectionUI.selectPanel == null)
         {
-            Debug.LogError("SelectPanelÀÌ nullÀÔ´Ï´Ù. Selection PanelÀ» È®ÀÎÇØÁÖ¼¼¿ä.");
+            Debug.LogError("SelectPanelì´ nullì…ë‹ˆë‹¤. Selection Panelì„ í™•ì¸í•´ì£¼ì„¸ìš”.");
             return;
         }
 
@@ -416,7 +416,7 @@ public class DialogSystem : MonoBehaviour
 
         if (runtimeSelectionUI.selectButtonPrefab == null)
         {
-            Debug.LogError("SelectButtonPrefabÀÌ nullÀÔ´Ï´Ù. Selection Button PrefabÀ» È®ÀÎÇØÁÖ¼¼¿ä.");
+            Debug.LogError("SelectButtonPrefabì´ nullì…ë‹ˆë‹¤. Selection Button Prefabì„ í™•ì¸í•´ì£¼ì„¸ìš”.");
             return;
         }
 
@@ -444,39 +444,90 @@ public class DialogSystem : MonoBehaviour
             runtimeSelectionUI.selectPanel.gameObject.SetActive(false);
         }
 
-        // ¾À ÀÌµ¿ÀÌ ¿ì¼± - ¾À ÀÌ¸§ÀÌ ÀÖÀ¸¸é ¾ÀÀ¸·Î ÀÌµ¿
+        // [ìˆ˜ì •] ì”¬ ì´ë™ì´ ìš°ì„  - ì¹´ë©”ë¼ ìœ„ì¹˜ ì •ë³´ì™€ í•¨ê»˜ ì „ë‹¬
         if (!string.IsNullOrEmpty(selectedChoice.nextEndingSceneName))
         {
-            LoadEndingScene(selectedChoice.nextEndingSceneName);
+            LoadEndingScene(selectedChoice.nextEndingSceneName, selectedChoice.endingCameraPosition);
         }
-        // ¾À ÀÌ¸§ÀÌ ¾øÀ» ¶§¸¸ ºê·£Ä¡ ÀÌµ¿
+        // [ê¸°ì¡´] ì”¬ ì´ë¦„ì´ ì—†ì„ ë•Œë§Œ ë¸Œëœì¹˜ ì´ë™
         else if (!string.IsNullOrEmpty(selectedChoice.nextBranchName))
         {
             StartBranch(selectedChoice.nextBranchName);
         }
-        // µÑ ´Ù ¾øÀ¸¸é ´ëÈ­ Á¾·á
+        // [ê¸°ì¡´] ë‘˜ ë‹¤ ì—†ìœ¼ë©´ ëŒ€í™” ì¢…ë£Œ
         else
         {
             EndDialog();
         }
     }
 
-    // ¾À ÀÌµ¿ ¸Ş¼­µå Ãß°¡
-    private void LoadEndingScene(string sceneName)
+    // ì”¬ ì´ë™ ë©”ì„œë“œ ì¶”ê°€
+    private void LoadEndingScene(string sceneName, Vector3 cameraPosition)
     {
-        Debug.Log($"¾ÀÀ¸·Î ÀÌµ¿ÇÕ´Ï´Ù: {sceneName}");
-        
-        // ´ÙÀÌ¾ó·Î±× Á¤¸®
+        Debug.Log($"ì”¬ìœ¼ë¡œ ì´ë™í•©ë‹ˆë‹¤: {sceneName}");
+
+        // [ìˆ˜ì •] ì¹´ë©”ë¼ ìœ„ì¹˜ ì •ë³´ë¥¼ PlayerPrefsì— ì €ì¥ (Vector3ë¥¼ 3ê°œì˜ floatë¡œ ì €ì¥)
+        PlayerPrefs.SetFloat("EndingCameraX", cameraPosition.x);
+        PlayerPrefs.SetFloat("EndingCameraY", cameraPosition.y);
+        PlayerPrefs.SetFloat("EndingCameraZ", cameraPosition.z);
+        PlayerPrefs.Save();
+        Debug.Log($"ì—”ë”© ì¹´ë©”ë¼ ìœ„ì¹˜ ì •ë³´ ì €ì¥: {cameraPosition}");
+
+        // [ê¸°ì¡´] ë‹¤ì´ì–¼ë¡œê·¸ ì •ë¦¬
         CleanupDialog();
-        
-        // ¾À ·Îµå
+
+        // [ê¸°ì¡´] ì”¬ ë¡œë“œ
         SceneManager.LoadScene(sceneName);
     }
 
-    // ´ÙÀÌ¾ó·Î±× Á¤¸® ¸Ş¼­µå Ãß°¡
+    // [ì¶”ê°€] ì—”ë”© ì”¬ì—ì„œ ìœ„ì¹˜ ì„¤ì •ì„ ì²˜ë¦¬í•  í•¨ìˆ˜
+    public void SetupEndingPosition()
+    {
+        // [ìˆ˜ì •] PlayerPrefsì—ì„œ ì¹´ë©”ë¼ ìœ„ì¹˜ ì •ë³´ ê°€ì ¸ì˜¤ê¸°
+        float x = PlayerPrefs.GetFloat("EndingCameraX", 0f);
+        float y = PlayerPrefs.GetFloat("EndingCameraY", 0f);
+        float z = PlayerPrefs.GetFloat("EndingCameraZ", 0f);
+
+        Vector3 cameraPosition = new Vector3(x, y, z);
+
+        // [ìˆ˜ì •] ì¹´ë©”ë¼ ìœ„ì¹˜ê°€ (0,0,0)ì´ ì•„ë‹ˆë©´ ì„¤ì • (ê¸°ë³¸ê°’ì´ ì•„ë‹Œ ê²½ìš°)
+        if (cameraPosition != Vector3.zero)
+        {
+            Camera mainCamera = Camera.main;
+            if (mainCamera != null)
+            {
+                mainCamera.transform.position = cameraPosition;
+                Debug.Log($"ì¹´ë©”ë¼ ìœ„ì¹˜ ì„¤ì •: {cameraPosition}");
+            }
+            else
+            {
+                Debug.LogWarning("ë©”ì¸ ì¹´ë©”ë¼ë¥¼ ì°¾ì„ ìˆ˜ ì—†ìŠµë‹ˆë‹¤.");
+            }
+        }
+        else
+        {
+            Debug.Log("ì—”ë”© ì¹´ë©”ë¼ ìœ„ì¹˜ ì •ë³´ê°€ ì—†ìŠµë‹ˆë‹¤. ê¸°ë³¸ ìœ„ì¹˜ë¡œ ì„¤ì •í•©ë‹ˆë‹¤.");
+        }
+
+        // [ìˆ˜ì •] ì‚¬ìš© í›„ ì‚­ì œ
+        PlayerPrefs.DeleteKey("EndingCameraX");
+        PlayerPrefs.DeleteKey("EndingCameraY");
+        PlayerPrefs.DeleteKey("EndingCameraZ");
+        PlayerPrefs.Save();
+    }
+
+    public void OnSceneLoaded()
+    {
+        // [ìˆ˜ì •] ìœ„ì¹˜ ì„¤ì • ì‹¤í–‰ (ë§¤ê°œë³€ìˆ˜ ì—†ì´)
+        SetupEndingPosition();
+
+        Debug.Log("ì—”ë”© ìœ„ì¹˜ ì„¤ì •ì´ ì™„ë£Œë˜ì—ˆìŠµë‹ˆë‹¤.");
+    }
+
+    // ë‹¤ì´ì–¼ë¡œê·¸ ì •ë¦¬ ë©”ì„œë“œ ì¶”ê°€
     private void CleanupDialog()
     {
-        // UI Á¤¸®
+        // UI ì •ë¦¬
         if (runtimeCharacters != null)
         {
             foreach (var character in runtimeCharacters)
@@ -490,101 +541,101 @@ public class DialogSystem : MonoBehaviour
             runtimeSelectionUI.selectPanel.gameObject.SetActive(false);
         }
 
-        // »óÅÂ ÃÊ±âÈ­
+        // ìƒíƒœ ì´ˆê¸°í™”
         isConversationActive = false;
-        
-        Debug.Log("´ÙÀÌ¾ó·Î±× Á¤¸® ¿Ï·á");
+
+        Debug.Log("ë‹¤ì´ì–¼ë¡œê·¸ ì •ë¦¬ ì™„ë£Œ");
     }
 
     private void SetActiveObjects(Character character, bool visible)
-{
-    if (uiMode == UIMode.IndividualUI)
     {
-        // °³º° UI ¸ğµå: °¢ Ä³¸¯ÅÍÀÇ UI¸¦ °³º°ÀûÀ¸·Î Á¦¾î
-        if (character.imageDialog != null)
+        if (uiMode == UIMode.IndividualUI)
         {
-            character.imageDialog.gameObject.SetActive(visible);
-            Debug.Log($"Individual UI - ImageDialog È°¼ºÈ­: {visible}");
-        }
-
-        if (character.textName != null)
-            character.textName.gameObject.SetActive(visible);
-
-        if (character.textDialogue != null)
-            character.textDialogue.gameObject.SetActive(visible);
-
-        if (character.objectArrow != null)
-            character.objectArrow.SetActive(false);
-
-        // ½ºÇÁ¶óÀÌÆ® Åõ¸íµµ Á¶Àı
-        if (character.spriteRenderer != null)
-        {
-            Color color = character.spriteRenderer.color;
-            color.a = visible ? 1f : 0.5f;
-            character.spriteRenderer.color = color;
-        }
-
-        if (character.spineSkeletonAnimation != null && character.spineSkeletonAnimation.skeleton != null)
-        {
-            Color color = character.spineSkeletonAnimation.skeleton.GetColor();
-            color.a = visible ? 1f : 0.5f;
-            character.spineSkeletonAnimation.skeleton.SetColor(color);
-        }
-    }
-    else
-    {
-        // °øÀ¯ UI ¸ğµå: ¿ÀÁ÷ È°¼º È­ÀÚÀÏ ¶§¸¸ UI Á¦¾î
-        if (visible) // È°¼º È­ÀÚÀÏ ¶§¸¸ UI¸¦ ÄÔ
-        {
-            Debug.Log($"Shared UI - È°¼º È­ÀÚ ¼³Á¤: Character Index {currentCharacterIndex}");
-            
-            if (sharedImageDialog != null)
+            // ê°œë³„ UI ëª¨ë“œ: ê° ìºë¦­í„°ì˜ UIë¥¼ ê°œë³„ì ìœ¼ë¡œ ì œì–´
+            if (character.imageDialog != null)
             {
-                sharedImageDialog.gameObject.SetActive(true);
-                Debug.Log($"Shared UI - ImageDialog È°¼ºÈ­: True");
+                character.imageDialog.gameObject.SetActive(visible);
+                Debug.Log($"Individual UI - ImageDialog í™œì„±í™”: {visible}");
             }
 
-            if (sharedTextName != null)
+            if (character.textName != null)
+                character.textName.gameObject.SetActive(visible);
+
+            if (character.textDialogue != null)
+                character.textDialogue.gameObject.SetActive(visible);
+
+            if (character.objectArrow != null)
+                character.objectArrow.SetActive(false);
+
+            // ìŠ¤í”„ë¼ì´íŠ¸ íˆ¬ëª…ë„ ì¡°ì ˆ
+            if (character.spriteRenderer != null)
             {
-                sharedTextName.gameObject.SetActive(true);
-                Debug.Log($"Shared UI - TextName È°¼ºÈ­: True");
+                Color color = character.spriteRenderer.color;
+                color.a = visible ? 1f : 0.5f;
+                character.spriteRenderer.color = color;
             }
 
-            if (sharedTextDialogue != null)
+            if (character.spineSkeletonAnimation != null && character.spineSkeletonAnimation.skeleton != null)
             {
-                sharedTextDialogue.gameObject.SetActive(true);
-                Debug.Log($"Shared UI - TextDialogue È°¼ºÈ­: True");
+                Color color = character.spineSkeletonAnimation.skeleton.GetColor();
+                color.a = visible ? 1f : 0.5f;
+                character.spineSkeletonAnimation.skeleton.SetColor(color);
             }
-
-            if (sharedObjectArrow != null)
-                sharedObjectArrow.SetActive(false);
         }
-
-        // ¸ğµç Ä³¸¯ÅÍ ½ºÇÁ¶óÀÌÆ® Åõ¸íµµ Á¶Àı
-        if (characterVisuals != null)
+        else
         {
-            for (int i = 0; i < characterVisuals.Length; i++)
+            // ê³µìœ  UI ëª¨ë“œ: ì˜¤ì§ í™œì„± í™”ìì¼ ë•Œë§Œ UI ì œì–´
+            if (visible) // í™œì„± í™”ìì¼ ë•Œë§Œ UIë¥¼ ì¼¬
             {
-                bool isCurrentSpeaker = (i == currentCharacterIndex);
+                Debug.Log($"Shared UI - í™œì„± í™”ì ì„¤ì •: Character Index {currentCharacterIndex}");
 
-                if (characterVisuals[i].spriteRenderer != null)
+                if (sharedImageDialog != null)
                 {
-                    Color color = characterVisuals[i].spriteRenderer.color;
-                    color.a = isCurrentSpeaker ? 1f : 0.5f;
-                    characterVisuals[i].spriteRenderer.color = color;
+                    sharedImageDialog.gameObject.SetActive(true);
+                    Debug.Log($"Shared UI - ImageDialog í™œì„±í™”: True");
                 }
 
-                if (characterVisuals[i].spineSkeletonAnimation != null &&
-                    characterVisuals[i].spineSkeletonAnimation.skeleton != null)
+                if (sharedTextName != null)
                 {
-                    Color color = characterVisuals[i].spineSkeletonAnimation.skeleton.GetColor();
-                    color.a = isCurrentSpeaker ? 1f : 0.5f;
-                    characterVisuals[i].spineSkeletonAnimation.skeleton.SetColor(color);
+                    sharedTextName.gameObject.SetActive(true);
+                    Debug.Log($"Shared UI - TextName í™œì„±í™”: True");
+                }
+
+                if (sharedTextDialogue != null)
+                {
+                    sharedTextDialogue.gameObject.SetActive(true);
+                    Debug.Log($"Shared UI - TextDialogue í™œì„±í™”: True");
+                }
+
+                if (sharedObjectArrow != null)
+                    sharedObjectArrow.SetActive(false);
+            }
+
+            // ëª¨ë“  ìºë¦­í„° ìŠ¤í”„ë¼ì´íŠ¸ íˆ¬ëª…ë„ ì¡°ì ˆ
+            if (characterVisuals != null)
+            {
+                for (int i = 0; i < characterVisuals.Length; i++)
+                {
+                    bool isCurrentSpeaker = (i == currentCharacterIndex);
+
+                    if (characterVisuals[i].spriteRenderer != null)
+                    {
+                        Color color = characterVisuals[i].spriteRenderer.color;
+                        color.a = isCurrentSpeaker ? 1f : 0.5f;
+                        characterVisuals[i].spriteRenderer.color = color;
+                    }
+
+                    if (characterVisuals[i].spineSkeletonAnimation != null &&
+                        characterVisuals[i].spineSkeletonAnimation.skeleton != null)
+                    {
+                        Color color = characterVisuals[i].spineSkeletonAnimation.skeleton.GetColor();
+                        color.a = isCurrentSpeaker ? 1f : 0.5f;
+                        characterVisuals[i].spineSkeletonAnimation.skeleton.SetColor(color);
+                    }
                 }
             }
         }
     }
-}
 
     private void EndDialog()
     {
@@ -608,7 +659,7 @@ public class DialogSystem : MonoBehaviour
             }
         }
 
-        // °øÀ¯ UI ¸ğµåÀÏ ¶§ Ãß°¡·Î Ä³¸¯ÅÍ ºñÁÖ¾ó ÃÊ±âÈ­
+        // ê³µìœ  UI ëª¨ë“œì¼ ë•Œ ì¶”ê°€ë¡œ ìºë¦­í„° ë¹„ì£¼ì–¼ ì´ˆê¸°í™”
         if (uiMode == UIMode.SharedUI && characterVisuals != null)
         {
             for (int i = 0; i < characterVisuals.Length; i++)
@@ -631,7 +682,7 @@ public class DialogSystem : MonoBehaviour
         }
 
         isConversationActive = false;
-        Debug.Log("´ëÈ­ Èå¸§ Á¾·á.");
+        Debug.Log("ëŒ€í™” íë¦„ ì¢…ë£Œ.");
     }
 
     private IEnumerator OnTypingText()
@@ -662,7 +713,7 @@ public class DialogSystem : MonoBehaviour
         }
     }
 
-    // µğ¹ö±ë¿ë ¸Ş¼­µå
+    // ë””ë²„ê¹…ìš© ë©”ì„œë“œ
     [ContextMenu("Debug Runtime Data")]
     public void DebugRuntimeData()
     {
@@ -699,14 +750,14 @@ public class DialogSystem : MonoBehaviour
     }
 }
 
-// UI ¸ğµå ¿­°ÅÇü
+// UI ëª¨ë“œ ì—´ê±°í˜•
 public enum UIMode
 {
-    IndividualUI,  // °¢ Ä³¸¯ÅÍº° µ¶¸³ UI (2°³ ´ëÈ­Ã¢)
-    SharedUI       // °øÀ¯ UI (1°³ ´ëÈ­Ã¢)
+    IndividualUI,  // ê° ìºë¦­í„°ë³„ ë…ë¦½ UI (2ê°œ ëŒ€í™”ì°½)
+    SharedUI       // ê³µìœ  UI (1ê°œ ëŒ€í™”ì°½)
 }
 
-// °³º° UI¿ë ±¸Á¶Ã¼
+// ê°œë³„ UIìš© êµ¬ì¡°ì²´
 [System.Serializable]
 public struct CharacterUIComponents
 {
@@ -724,7 +775,7 @@ public struct CharacterUIComponents
     public GameObject objectArrow;
 }
 
-// °øÀ¯ UI¿ë ±¸Á¶Ã¼
+// ê³µìœ  UIìš© êµ¬ì¡°ì²´
 [System.Serializable]
 public struct CharacterVisualComponents
 {
@@ -736,7 +787,7 @@ public struct CharacterVisualComponents
     public SkeletonMecanim spineSkeletonAnimation;
 }
 
-// ±âÁ¸ ±¸Á¶Ã¼µéÀº ±×´ë·Î À¯Áö
+// ê¸°ì¡´ êµ¬ì¡°ì²´ë“¤ì€ ê·¸ëŒ€ë¡œ ìœ ì§€
 [System.Serializable]
 public struct Character
 {
@@ -763,6 +814,7 @@ public struct Choice
     public string text;
     public string nextBranchName;
     public string nextEndingSceneName;
+    public Vector3 endingCameraPosition;
 }
 
 [System.Serializable]
