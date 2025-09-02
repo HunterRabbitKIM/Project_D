@@ -303,7 +303,21 @@ public class DialogSystem : MonoBehaviour
         if (database.BranchDatabase.TryGetValue(branchName, out currentBranch))
         {
             currentDialogIndex = -1;
-            SetNextDialog();
+
+            // UI 이펙트가 있으면 이펙트 완료 후 대화 시작
+            if (ShouldExecuteUIEffect(currentBranch))
+            {
+                HandleBranchUIEffect(currentBranch, true, () =>
+                {
+                    // 이펙트 완료 후 대화 시작
+                    SetNextDialog();
+                });
+            }
+            else
+            {
+                // 이펙트가 없으면 바로 대화 시작
+                SetNextDialog();
+            }
         }
         else
         {
@@ -639,6 +653,10 @@ public class DialogSystem : MonoBehaviour
 
     private void EndDialog()
     {
+        if (currentBranch.branchName != null)
+        {
+            HandleBranchUIEffect(currentBranch, false); // false = 브랜치 종료
+        }
         if (runtimeCharacters != null)
         {
             foreach (var character in runtimeCharacters)
@@ -748,6 +766,115 @@ public class DialogSystem : MonoBehaviour
         Debug.Log($"Selection Panel: {selectionPanel != null}");
         Debug.Log($"Selection Button Prefab: {selectionButtonPrefab != null}");
     }
+
+    private bool ShouldExecuteUIEffect(DialogBranch branch)
+    {
+        var effectSettings = branch.uiEffectSettings;
+        return effectSettings.enableUIEffect && effectSettings.triggerOnBranchStart;
+    }
+
+    private void HandleBranchUIEffect(DialogBranch branch, bool isStart, System.Action onComplete = null)
+    {
+        var effectSettings = branch.uiEffectSettings;
+
+        // UI 이펙트가 비활성화되어 있으면 리턴
+        if (!effectSettings.enableUIEffect)
+        {
+            onComplete?.Invoke();
+            return;
+        }
+        // 시작/종료 조건 확인
+        if ((isStart && !effectSettings.triggerOnBranchStart) ||
+            (!isStart && !effectSettings.triggerOnBranchEnd))
+        {
+            onComplete?.Invoke();
+            return;
+        }
+
+        // 딜레이가 있으면 코루틴으로 실행
+        if (effectSettings.delayBeforeEffect > 0)
+        {
+            StartCoroutine(ExecuteUIEffectWithDelay(effectSettings));
+        }
+        else
+        {
+            ExecuteUIEffect(effectSettings, onComplete);
+        }
+    }
+
+    private IEnumerator ExecuteUIEffectWithDelay(UIEffectSettings settings, System.Action onComplete = null)
+    {
+        yield return new WaitForSeconds(settings.delayBeforeEffect);
+        ExecuteUIEffect(settings, onComplete);
+    }
+
+    private void ExecuteUIEffect(UIEffectSettings settings, System.Action onComplete = null)
+    {
+        switch (settings.effectType)
+        {
+            case UIEffectType.Blink:
+                var beautifyController1 = FindObjectOfType<BeautifyUIController>();
+                if (beautifyController1 != null)
+                {
+                    beautifyController1.SetCustomBlinkSettings(settings.customBlinkCount, settings.customBlinkSpeed);
+                    StartCoroutine(WaitForBlinkComplete(beautifyController1, onComplete));
+                    beautifyController1.StartBlinking();
+                }
+                else
+                {
+                    onComplete?.Invoke();
+                }
+                break;
+
+            case UIEffectType.Blur:
+                UIManager.RequestDialogEffect(currentBranch.branchName, "blur_end");
+                onComplete?.Invoke();
+                break;
+
+            case UIEffectType.BlinkWithBlur:
+                var beautifyController2 = FindObjectOfType<BeautifyUIController>();
+                if (beautifyController2 != null)
+                {
+                    beautifyController2.SetCustomBlinkSettings(settings.customBlinkCount, settings.customBlinkSpeed);
+                    beautifyController2.ExecuteBlinkWithBlur(onComplete);
+                }
+                else
+                {
+                    onComplete?.Invoke();
+                }
+                break;
+
+            case UIEffectType.CustomBlur:
+                var beautifyController3 = FindObjectOfType<BeautifyUIController>();
+                if (beautifyController3 != null)
+                {
+                    beautifyController3.SetCustomBlurValues(settings.customBlurStart, settings.customBlurEnd);
+                    beautifyController3.ApplyEndBlur();
+                }
+                onComplete?.Invoke(); // 커스텀 블러는 즉시 완료
+                break;
+
+            default:
+                onComplete?.Invoke();
+                break;
+        }
+
+        Debug.Log($"UI 이펙트 실행: {settings.effectType} (브랜치: {currentBranch.branchName})");
+    }
+
+    private IEnumerator WaitForBlinkComplete(BeautifyUIController controller, System.Action onComplete)
+    {
+        // 깜빡임이 시작될 때까지 대기
+        yield return new WaitForSeconds(0.1f);
+
+        // 깜빡임이 완료될 때까지 대기
+        while (controller.IsBlinking())
+        {
+            yield return null;
+        }
+
+        onComplete?.Invoke();
+    }
 }
 
 // UI 모드 열거형
@@ -755,6 +882,16 @@ public enum UIMode
 {
     IndividualUI,  // 각 캐릭터별 독립 UI (2개 대화창)
     SharedUI       // 공유 UI (1개 대화창)
+}
+
+[System.Serializable]
+public enum UIEffectType
+{
+    None,
+    Blink,
+    Blur,
+    BlinkWithBlur,
+    CustomBlur
 }
 
 // 개별 UI용 구조체
@@ -824,6 +961,7 @@ public struct DialogBranch
     public DialogDate[] dialogs;
     public Choice[] choices;
     public string autoNextBranchName;
+    public UIEffectSettings uiEffectSettings;
 }
 
 [System.Serializable]
@@ -838,4 +976,29 @@ public struct SelectionUI
 {
     public GameObject selectButtonPrefab;
     public Transform selectPanel;
+}
+
+[System.Serializable]
+public struct UIEffectSettings
+{
+    [Header("Effect Settings")]
+    public bool enableUIEffect;        // UI 이펙트 활성화 여부
+    public UIEffectType effectType;    // 이펙트 타입
+
+    [Header("Timing Settings")]
+    public bool triggerOnBranchStart;  // 브랜치 시작 시 트리거
+    public bool triggerOnBranchEnd;    // 브랜치 종료 시 트리거
+    public float delayBeforeEffect;    // 이펙트 실행 전 딜레이
+
+    [Header("Custom Blur Settings")]
+    [Range(0f, 5f)]
+    public float customBlurStart;      // 커스텀 시작 블러 값
+    [Range(0f, 5f)]
+    public float customBlurEnd;        // 커스텀 종료 블러 값
+
+    [Header("Blink Settings")]
+    [Range(1, 10)]
+    public int customBlinkCount;       // 커스텀 깜빡임 횟수
+    [Range(0.1f, 1f)]
+    public float customBlinkSpeed;     // 커스텀 깜빡임 속도
 }
