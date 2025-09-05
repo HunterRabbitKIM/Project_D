@@ -45,7 +45,6 @@ public class BeautifyUIController : MonoBehaviour
         {
             if (InitializeBeautify())
             {
-                Debug.Log("Beautify 초기화 성공!");
                 break;
             }
 
@@ -89,7 +88,6 @@ public class BeautifyUIController : MonoBehaviour
             beautify.vignettingBlink.overrideState = true;
             beautify.vignettingBlink.value = 0f;
 
-            Debug.Log($"Beautify 초기화 완료 - Original Blur: {originalBlur}");
             return true;
         }
         else

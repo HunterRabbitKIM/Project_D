@@ -425,6 +425,11 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &636383476 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 4406643938176835244, guid: 5f509505118dff4419088caa5a29a70d, type: 3}
+  m_PrefabInstance: {fileID: 2983580042759464132}
+  m_PrefabAsset: {fileID: 0}
 --- !u!114 &686557797 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 509864123812761780, guid: 5f509505118dff4419088caa5a29a70d, type: 3}
@@ -574,6 +579,7 @@ MonoBehaviour:
   blinkSpeed: 0.2
   blinkFadeDuration: 0.3
   blinkInterval: 0.2
+  initialDelay: 0.2
   volume: {fileID: 1501999466}
 --- !u!4 &849451714
 Transform:
@@ -989,6 +995,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2505d0388210fc044895f0f491c04851, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  dialogPanel: {fileID: 636383476}
 --- !u!4 &1563015585
 Transform:
   m_ObjectHideFlags: 0
