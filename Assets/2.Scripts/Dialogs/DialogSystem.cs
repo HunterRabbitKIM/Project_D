@@ -126,6 +126,8 @@ public class DialogSystem : MonoBehaviour
                 character.objectArrow = sharedObjectArrow;
 
                 runtimeCharacters[i] = character;
+
+                Debug.Log($"Shared UI - Character {i} ({characterVisuals[i].characterName}) 할당 완료");
             }
         }
         else
@@ -142,6 +144,8 @@ public class DialogSystem : MonoBehaviour
             Debug.LogWarning("RuntimeCharacters가 null입니다.");
             return;
         }
+
+        Debug.Log($"Setup 시작: UI Mode = {uiMode}");
 
         if (uiMode == UIMode.IndividualUI)
         {
@@ -172,19 +176,18 @@ public class DialogSystem : MonoBehaviour
         }
         else
         {
-            /*
             // 공유 UI 모드
             Debug.Log($"공유 UI 컴포넌트 상태 확인:");
             Debug.Log($"  sharedImageDialog: {sharedImageDialog != null} ({sharedImageDialog?.name})");
             Debug.Log($"  sharedTextName: {sharedTextName != null} ({sharedTextName?.name})");
             Debug.Log($"  sharedTextDialogue: {sharedTextDialogue != null} ({sharedTextDialogue?.name})");
             Debug.Log($"  sharedObjectArrow: {sharedObjectArrow != null} ({sharedObjectArrow?.name})");
-            */
-            
+
             // 공유 UI 초기 상태 설정 - 일단 켜둠 (테스트용)
             if (sharedImageDialog != null)
             {
                 sharedImageDialog.gameObject.SetActive(true);
+                Debug.Log($"sharedImageDialog 활성화: {sharedImageDialog.gameObject.activeSelf}");
             }
             else
             {
@@ -195,6 +198,7 @@ public class DialogSystem : MonoBehaviour
             {
                 sharedTextName.gameObject.SetActive(true);
                 sharedTextName.text = "테스트 이름";
+                Debug.Log($"sharedTextName 활성화: {sharedTextName.gameObject.activeSelf}");
             }
             else
             {
@@ -205,6 +209,7 @@ public class DialogSystem : MonoBehaviour
             {
                 sharedTextDialogue.gameObject.SetActive(true);
                 sharedTextDialogue.text = "테스트 대사";
+                Debug.Log($"sharedTextDialogue 활성화: {sharedTextDialogue.gameObject.activeSelf}");
             }
             else
             {
@@ -227,6 +232,7 @@ public class DialogSystem : MonoBehaviour
                         Color color = characterVisuals[i].spriteRenderer.color;
                         color.a = 0.5f;
                         characterVisuals[i].spriteRenderer.color = color;
+                        Debug.Log($"Character {i} 스프라이트 설정 완료");
                     }
 
                     if (characterVisuals[i].spineSkeletonAnimation != null)
@@ -238,6 +244,7 @@ public class DialogSystem : MonoBehaviour
                             color.a = 0.5f;
                             characterVisuals[i].spineSkeletonAnimation.skeleton.SetColor(color);
                         }
+                        Debug.Log($"Character {i} Spine 애니메이션 설정 완료");
                     }
                 }
             }
@@ -250,7 +257,10 @@ public class DialogSystem : MonoBehaviour
         if (runtimeSelectionUI.selectPanel != null)
         {
             runtimeSelectionUI.selectPanel.gameObject.SetActive(false);
+            Debug.Log("Selection Panel 숨김 처리 완료");
         }
+
+        Debug.Log($"Setup 완료: {uiMode} 모드로 초기화");
     }
 
     public void StartConversation()
@@ -297,6 +307,7 @@ public class DialogSystem : MonoBehaviour
             // UI 이펙트가 있으면 이펙트 완료 후 대화 시작
             if (ShouldExecuteUIEffect(currentBranch))
             {
+                HideAllDialogUI();
                 HandleBranchUIEffect(currentBranch, true, () =>
                 {
                     // 이펙트 완료 후 대화 시작
@@ -381,19 +392,25 @@ public class DialogSystem : MonoBehaviour
             return;
         }
 
+        currentCharacterIndex = newSpeakerIndex;
+
+        // 먼저 현재 화자의 UI를 강제로 표시
+        ShowDialogUIForCurrentSpeaker();
+
+        // 그 다음 일반적인 SetActiveObjects 호출
         for (int i = 0; i < runtimeCharacters.Length; i++)
         {
             bool isActiveSpeaker = (i == newSpeakerIndex);
             SetActiveObjects(runtimeCharacters[i], isActiveSpeaker);
         }
 
-        currentCharacterIndex = newSpeakerIndex;
-
+        // 이름 설정
         if (runtimeCharacters[currentCharacterIndex].textName != null)
         {
             runtimeCharacters[currentCharacterIndex].textName.text = currentBranch.dialogs[currentDialogIndex].name;
         }
 
+        Debug.Log("Dialog UI 표시 완료 및 타이핑 시작");
         StartCoroutine("OnTypingText");
     }
 
@@ -468,12 +485,14 @@ public class DialogSystem : MonoBehaviour
     // 씬 이동 메서드 추가
     private void LoadEndingScene(string sceneName, Vector3 cameraPosition)
     {
+        Debug.Log($"씬으로 이동합니다: {sceneName}");
 
         // [수정] 카메라 위치 정보를 PlayerPrefs에 저장 (Vector3를 3개의 float로 저장)
         PlayerPrefs.SetFloat("EndingCameraX", cameraPosition.x);
         PlayerPrefs.SetFloat("EndingCameraY", cameraPosition.y);
         PlayerPrefs.SetFloat("EndingCameraZ", cameraPosition.z);
         PlayerPrefs.Save();
+        Debug.Log($"엔딩 카메라 위치 정보 저장: {cameraPosition}");
 
         // [기존] 다이얼로그 정리
         CleanupDialog();
@@ -499,6 +518,7 @@ public class DialogSystem : MonoBehaviour
             if (mainCamera != null)
             {
                 mainCamera.transform.position = cameraPosition;
+                Debug.Log($"카메라 위치 설정: {cameraPosition}");
             }
             else
             {
@@ -521,6 +541,8 @@ public class DialogSystem : MonoBehaviour
     {
         // [수정] 위치 설정 실행 (매개변수 없이)
         SetupEndingPosition();
+
+        Debug.Log("엔딩 위치 설정이 완료되었습니다.");
     }
 
     // 다이얼로그 정리 메서드 추가
@@ -542,6 +564,8 @@ public class DialogSystem : MonoBehaviour
 
         // 상태 초기화
         isConversationActive = false;
+
+        Debug.Log("다이얼로그 정리 완료");
     }
 
     private void SetActiveObjects(Character character, bool visible)
@@ -552,6 +576,7 @@ public class DialogSystem : MonoBehaviour
             if (character.imageDialog != null)
             {
                 character.imageDialog.gameObject.SetActive(visible);
+                Debug.Log($"Individual UI - ImageDialog 활성화: {visible}");
             }
 
             if (character.textName != null)
@@ -580,29 +605,61 @@ public class DialogSystem : MonoBehaviour
         }
         else
         {
-            // 공유 UI 모드: 오직 활성 화자일 때만 UI 제어
-            if (visible) // 활성 화자일 때만 UI를 켬
+            // 수정: 공유 UI 모드에서 visible = false일 때도 UI 끄기
+            if (visible)
             {
+                // 활성 화자일 때 UI 켜기
+                Debug.Log($"Shared UI - 활성 화자 설정: Character Index {currentCharacterIndex}");
+
                 if (sharedImageDialog != null)
                 {
                     sharedImageDialog.gameObject.SetActive(true);
+                    Debug.Log($"Shared UI - ImageDialog 활성화: True");
                 }
 
                 if (sharedTextName != null)
                 {
                     sharedTextName.gameObject.SetActive(true);
+                    Debug.Log($"Shared UI - TextName 활성화: True");
                 }
 
                 if (sharedTextDialogue != null)
                 {
                     sharedTextDialogue.gameObject.SetActive(true);
+                    Debug.Log($"Shared UI - TextDialogue 활성화: True");
+                }
+
+                if (sharedObjectArrow != null)
+                    sharedObjectArrow.SetActive(false);
+            }
+            else
+            {
+                // 추가: visible = false일 때 공유 UI 끄기
+                Debug.Log("Shared UI - 모든 UI 비활성화");
+
+                if (sharedImageDialog != null)
+                {
+                    sharedImageDialog.gameObject.SetActive(false);
+                    Debug.Log("Shared UI - ImageDialog 비활성화");
+                }
+
+                if (sharedTextName != null)
+                {
+                    sharedTextName.gameObject.SetActive(false);
+                    Debug.Log("Shared UI - TextName 비활성화");
+                }
+
+                if (sharedTextDialogue != null)
+                {
+                    sharedTextDialogue.gameObject.SetActive(false);
+                    Debug.Log("Shared UI - TextDialogue 비활성화");
                 }
 
                 if (sharedObjectArrow != null)
                     sharedObjectArrow.SetActive(false);
             }
 
-            // 모든 캐릭터 스프라이트 투명도 조절
+            // 캐릭터 스프라이트 투명도 조절
             if (characterVisuals != null)
             {
                 for (int i = 0; i < characterVisuals.Length; i++)
@@ -677,6 +734,7 @@ public class DialogSystem : MonoBehaviour
         }
 
         isConversationActive = false;
+        Debug.Log("대화 흐름 종료.");
     }
 
     private IEnumerator OnTypingText()
@@ -707,7 +765,6 @@ public class DialogSystem : MonoBehaviour
         }
     }
 
-    /*
     // 디버깅용 메서드
     [ContextMenu("Debug Runtime Data")]
     public void DebugRuntimeData()
@@ -743,7 +800,6 @@ public class DialogSystem : MonoBehaviour
         Debug.Log($"Selection Panel: {selectionPanel != null}");
         Debug.Log($"Selection Button Prefab: {selectionButtonPrefab != null}");
     }
-    */
 
     private bool ShouldExecuteUIEffect(DialogBranch branch)
     {
@@ -836,6 +892,8 @@ public class DialogSystem : MonoBehaviour
                 onComplete?.Invoke();
                 break;
         }
+
+        Debug.Log($"UI 이펙트 실행: {settings.effectType} (브랜치: {currentBranch.branchName})");
     }
 
     private IEnumerator WaitForBlinkComplete(BeautifyUIController controller, System.Action onComplete)
@@ -850,6 +908,127 @@ public class DialogSystem : MonoBehaviour
         }
 
         onComplete?.Invoke();
+    }
+
+    private void HideAllDialogUI()
+    {
+        Debug.Log("모든 Dialog UI 숨김");
+
+        if (uiMode == UIMode.IndividualUI)
+        {
+            // 개별 UI 모드: 각 캐릭터의 UI를 개별적으로 숨김
+            if (runtimeCharacters != null)
+            {
+                for (int i = 0; i < runtimeCharacters.Length; i++)
+                {
+                    var character = runtimeCharacters[i];
+
+                    if (character.imageDialog != null)
+                    {
+                        character.imageDialog.gameObject.SetActive(false);
+                        Debug.Log($"Individual UI {i} - ImageDialog 숨김");
+                    }
+
+                    if (character.textName != null)
+                    {
+                        character.textName.gameObject.SetActive(false);
+                        Debug.Log($"Individual UI {i} - TextName 숨김");
+                    }
+
+                    if (character.textDialogue != null)
+                    {
+                        character.textDialogue.gameObject.SetActive(false);
+                        Debug.Log($"Individual UI {i} - TextDialogue 숨김");
+                    }
+
+                    if (character.objectArrow != null)
+                    {
+                        character.objectArrow.SetActive(false);
+                        Debug.Log($"Individual UI {i} - ObjectArrow 숨김");
+                    }
+                }
+            }
+        }
+        else
+        {
+            // 공유 UI 모드: 공유 UI 컴포넌트들을 직접 숨김
+            if (sharedImageDialog != null)
+            {
+                sharedImageDialog.gameObject.SetActive(false);
+                Debug.Log("Shared UI - ImageDialog 숨김");
+            }
+
+            if (sharedTextName != null)
+            {
+                sharedTextName.gameObject.SetActive(false);
+                Debug.Log("Shared UI - TextName 숨김");
+            }
+
+            if (sharedTextDialogue != null)
+            {
+                sharedTextDialogue.gameObject.SetActive(false);
+                Debug.Log("Shared UI - TextDialogue 숨김");
+            }
+
+            if (sharedObjectArrow != null)
+            {
+                sharedObjectArrow.SetActive(false);
+                Debug.Log("Shared UI - ObjectArrow 숨김");
+            }
+        }
+    }
+
+    private void ShowDialogUIForCurrentSpeaker()
+    {
+        Debug.Log("=== 현재 화자의 Dialog UI 표시 ===");
+
+        if (runtimeCharacters == null || currentCharacterIndex >= runtimeCharacters.Length)
+            return;
+
+        if (uiMode == UIMode.IndividualUI)
+        {
+            // 개별 UI 모드: 현재 화자의 UI만 표시
+            var character = runtimeCharacters[currentCharacterIndex];
+
+            if (character.imageDialog != null)
+            {
+                character.imageDialog.gameObject.SetActive(true);
+                Debug.Log($"Individual UI {currentCharacterIndex} - ImageDialog 표시");
+            }
+
+            if (character.textName != null)
+            {
+                character.textName.gameObject.SetActive(true);
+                Debug.Log($"Individual UI {currentCharacterIndex} - TextName 표시");
+            }
+
+            if (character.textDialogue != null)
+            {
+                character.textDialogue.gameObject.SetActive(true);
+                Debug.Log($"Individual UI {currentCharacterIndex} - TextDialogue 표시");
+            }
+        }
+        else
+        {
+            // 공유 UI 모드: 공유 UI 표시
+            if (sharedImageDialog != null)
+            {
+                sharedImageDialog.gameObject.SetActive(true);
+                Debug.Log("Shared UI - ImageDialog 표시");
+            }
+
+            if (sharedTextName != null)
+            {
+                sharedTextName.gameObject.SetActive(true);
+                Debug.Log("Shared UI - TextName 표시");
+            }
+
+            if (sharedTextDialogue != null)
+            {
+                sharedTextDialogue.gameObject.SetActive(true);
+                Debug.Log("Shared UI - TextDialogue 표시");
+            }
+        }
     }
 }
 
