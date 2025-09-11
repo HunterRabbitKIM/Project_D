@@ -3,11 +3,16 @@ using UnityEngine;
 public class DialogUIController : MonoBehaviour
 {
     [SerializeField] private GameObject dialogPanel;
+    [SerializeField] private DialogSystem dialogSystem;
     private bool wasDialogUIVisible = false;
 
     private void Start()
     {
         SubscribeToDialogEvents();
+        if(dialogSystem == null)
+        {
+            dialogSystem = FindObjectOfType<DialogSystem>();
+        }
     }
 
     private void SubscribeToDialogEvents()
@@ -35,9 +40,19 @@ public class DialogUIController : MonoBehaviour
 
     private void OnBeautifyEffectCompleted()
     {
-        if (dialogPanel != null && wasDialogUIVisible)
+        if(wasDialogUIVisible)
         {
-            dialogPanel.SetActive(true); // 간단하게 복원
+            if(dialogPanel != null)
+            {
+                dialogSystem.RestoreUIAfterEffect();
+            }
+            else
+            {
+                if(dialogSystem != null)
+                {
+                    dialogPanel.SetActive(true);
+                }
+            }
         }
     }
 
