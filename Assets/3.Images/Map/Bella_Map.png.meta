@@ -147,7 +147,8 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      Bella_Map_0: 4808851583996339875
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

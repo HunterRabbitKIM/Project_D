@@ -1,29 +1,68 @@
 using UnityEngine;
-using System;
+using System.Collections.Generic;
+using System.Collections;
+
+[System.Serializable]
+public class UIEffectRequest
+{
+    public string branchName;
+    public string effectType;
+    public float timestamp;
+}
 
 public class UIManager : MonoBehaviour
 {
-    [SerializeField] private BeautifyUIController beautifyController; // 추가: BeautifyUIController 참조
-    [SerializeField] private DialogUIController dialogController;     // 추가: DialogUIController 참조
+    [Header("UI 그룹 설정")]
+    [SerializeField] private List<UIGroup> uiGroups = new List<UIGroup>();
 
-    [SerializeField] private bool useCustomDialogSystem = true;
+    [Header("Beautify 컨트롤러")]
+    [SerializeField] private BeautifyUIController beautifyController; // 추가: Beautify 컨트롤러 참조
 
-    public static event Action<string> OnDialogSystemTriggered;
-    public static event Action<string, string> OnDialogEffectRequested;
+    // 싱글톤 패턴
+    public static UIManager Instance { get; private set; }
 
-    public static event Action<string> OnConversationStarted;         // 추가: 대화 시작 이벤트
-    public static event Action OnConversationEnded;                   // 추가: 대화 종료 이벤트
+    private Dictionary<string, List<GameObject>> uiGroupsDict = new Dictionary<string, List<GameObject>>();
+    private Dictionary<string, bool> previousStates = new Dictionary<string, bool>();
 
-    private string currentSystemName = "";
-    private bool isConversationActive = false;
+    // 추가: 이펙트 요청 큐 시스템
+    private Queue<UIEffectRequest> effectQueue = new Queue<UIEffectRequest>();
+    private bool isProcessingEffect = false;
+
+    private void Awake()
+    {
+        if (Instance == null)
+        {
+            Instance = this;
+            DontDestroyOnLoad(gameObject); // 추가: 씬 전환 시에도 유지
+            InitializeUIGroups();
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+    }
 
     private void Start()
     {
-        InitializeUIManager();
-        SubscribeToDialogEvents();
+        InitializeBeautifyController(); // 추가: Beautify 컨트롤러 초기화
+        SubscribeToEffectEvents();
     }
 
-    private void InitializeUIManager()
+    private void InitializeUIGroups()
+    {
+        foreach (var group in uiGroups)
+        {
+            if (!uiGroupsDict.ContainsKey(group.groupName))
+            {
+                uiGroupsDict[group.groupName] = new List<GameObject>();
+            }
+
+            uiGroupsDict[group.groupName].AddRange(group.uiObjects);
+            Debug.Log($"UI 그룹 '{group.groupName}' 초기화 완료: {group.uiObjects.Count}개 요소");
+        }
+    }
+
+    private void InitializeBeautifyController()
     {
         if (beautifyController == null)
         {
@@ -31,151 +70,241 @@ public class UIManager : MonoBehaviour
             if (beautifyController == null)
             {
                 Debug.LogWarning("BeautifyUIController를 찾을 수 없습니다!");
+                return;
             }
         }
 
-        if (dialogController == null)
+        Debug.Log("BeautifyUIController 초기화 완료");
+    }
+
+    private void SubscribeToEffectEvents()
+    {
+        BeautifyUIController.OnEffectStarted += OnEffectStarted;
+        BeautifyUIController.OnEffectCompleted += OnEffectCompleted;
+    }
+
+    private void OnEffectStarted()
+    {
+        Debug.Log("UI 이펙트 시작 - 모든 UI 그룹 숨김 처리");
+        HideAllUIGroups();
+    }
+
+    private void OnEffectCompleted()
+    {
+        Debug.Log("UI 이펙트 완료 - 모든 UI 그룹 복원 처리");
+        RestoreAllUIGroups();
+    }
+
+    private void HideAllUIGroups()
+    {
+        previousStates.Clear();
+
+        foreach (var kvp in uiGroupsDict)
         {
-            dialogController = FindObjectOfType<DialogUIController>();
-            if (dialogController == null)
+            string groupName = kvp.Key;
+            List<GameObject> uiObjects = kvp.Value;
+
+            // 각 그룹의 현재 상태 저장
+            bool wasAnyActive = false;
+            foreach (var ui in uiObjects)
             {
-                Debug.LogWarning("DialogUIController를 찾을 수 없습니다!");
+                if (ui != null && ui.activeInHierarchy)
+                {
+                    wasAnyActive = true;
+                    break;
+                }
+            }
+            previousStates[groupName] = wasAnyActive;
+
+            // 모든 UI 숨김
+            foreach (var ui in uiObjects)
+            {
+                if (ui != null)
+                {
+                    ui.SetActive(false);
+                }
+            }
+
+            Debug.Log($"UI 그룹 '{groupName}' 숨김 처리 완료");
+        }
+    }
+
+    private void RestoreAllUIGroups()
+    {
+        foreach (var kvp in previousStates)
+        {
+            string groupName = kvp.Key;
+            bool shouldRestore = kvp.Value;
+
+            if (shouldRestore && uiGroupsDict.ContainsKey(groupName))
+            {
+                foreach (var ui in uiGroupsDict[groupName])
+                {
+                    if (ui != null)
+                    {
+                        ui.SetActive(true);
+                    }
+                }
+                Debug.Log($"UI 그룹 '{groupName}' 복원 완료");
             }
         }
+
+        // 다이얼로그 시스템에 UI 복원 알림
+        NotifyDialogSystemRestore();
     }
 
-    private void SubscribeToDialogEvents()
+    private void NotifyDialogSystemRestore()
     {
-        // 수정: 커스텀 Dialog System 이벤트 구독 (PixelCrushers 제거)
-        OnConversationStarted += HandleConversationStarted;
-        OnConversationEnded += HandleConversationEnded;
-
-        // 기존: 커스텀 이벤트 구독
-        OnDialogSystemTriggered += HandleDialogSystemTrigger;
-        OnDialogEffectRequested += HandleDialogEffectRequest;
-    }
-
-    private void HandleConversationStarted(string systemName)
-    {
-        currentSystemName = systemName;
-        isConversationActive = true;
-        HandleDialogSystemTrigger(systemName);
-    }
-
-    private void HandleConversationEnded()
-    {
-        isConversationActive = false;
-        currentSystemName = "";
-        ResetAllUIEffects();
-    }
-
-
-    private void HandleDialogSystemTrigger(string systemName)
-    {
-        switch (systemName)
+        var dialogSystem = FindObjectOfType<DialogSystem>();
+        if (dialogSystem != null)
         {
-            case "IntroDialog":
-                HandleIntroDialog();
-                break;
-
-            case "MainDialog":
-                HandleMainDialog();
-                break;
-
-            case "EndingDialog":
-                HandleEndingDialog();
-                break;
-
-            default:
-                HandleDefaultDialog();
-                break;
+            dialogSystem.RestoreUIAfterEffect();
+            Debug.Log("DialogSystem에 UI 복원 알림 전송 완료");
         }
     }
 
-    private void HandleIntroDialog()
+    public static void RequestDialogEffect(string branchName, string effectType)
     {
-        // Bella_Intro_Dialog의 첫 부분에서 눈 깜빡임 실행
-        if (beautifyController != null)
+        if (Instance != null)
         {
-            beautifyController.ExecuteBlinkWithBlur();
+            Instance.ProcessEffectRequest(branchName, effectType);
         }
-
-        Debug.Log("IntroDialog 시스템 이펙트 실행: 눈 깜빡임과 블러 적용");
+        else
+        {
+            Debug.LogError("UIManager Instance가 없습니다!");
+        }
     }
 
-    private void HandleMainDialog()
+    private void ProcessEffectRequest(string branchName, string effectType)
     {
-        if (beautifyController != null)
+        var request = new UIEffectRequest
         {
-            beautifyController.ApplyEndBlur();
+            branchName = branchName,
+            effectType = effectType,
+            timestamp = Time.time
+        };
+
+        effectQueue.Enqueue(request);
+
+        if (!isProcessingEffect)
+        {
+            StartCoroutine(ProcessEffectQueue());
+        }
+    }
+    private IEnumerator ProcessEffectQueue()
+    {
+        isProcessingEffect = true;
+
+        while (effectQueue.Count > 0)
+        {
+            var request = effectQueue.Dequeue();
+            yield return StartCoroutine(ExecuteEffectRequest(request));
         }
 
-        Debug.Log("MainDialog 시스템 이펙트 실행: 블러 적용");
+        isProcessingEffect = false;
     }
 
-    private void HandleEndingDialog()
+    private IEnumerator ExecuteEffectRequest(UIEffectRequest request)
     {
-        if (beautifyController != null)
+        Debug.Log($"이펙트 요청 실행: {request.branchName} - {request.effectType}");
+
+        if (beautifyController == null)
         {
-            beautifyController.StartBlinking();
+            Debug.LogError("BeautifyUIController가 설정되지 않았습니다!");
+            yield break;
         }
 
-        Debug.Log("EndingDialog 시스템 이펙트 실행: 깜빡임 적용");
-    }
-    private void HandleDefaultDialog()
-    {
-        if (beautifyController != null)
-        {
-            beautifyController.ApplyStartBlur();
-        }
-
-        Debug.Log("기본 Dialog 시스템 이펙트 실행: 시작 블러 적용");
-    }
-    private void HandleDialogEffectRequest(string systemName, string effectType)
-    {
-        switch (effectType.ToLower())
+        switch (request.effectType.ToLower())
         {
             case "blink":
-                beautifyController?.StartBlinking();
+                beautifyController.StartBlinking();
+                yield return new WaitUntil(() => !beautifyController.IsBlinking());
                 break;
 
             case "blur_start":
-                beautifyController?.ApplyStartBlur();
+                beautifyController.ApplyStartBlur();
                 break;
 
             case "blur_end":
-                beautifyController?.ApplyEndBlur();
+                beautifyController.ApplyEndBlur();
                 break;
 
             case "blink_with_blur":
-                beautifyController?.ExecuteBlinkWithBlur();
+                yield return StartCoroutine(ExecuteBlinkWithBlur());
                 break;
 
             case "reset":
-                beautifyController?.ResetAllEffects();
+                beautifyController.ResetAllEffects();
+                break;
+
+            default:
+                Debug.LogWarning($"알 수 없는 이펙트 타입: {request.effectType}");
                 break;
         }
     }
-    private void ResetAllUIEffects()
+
+    private IEnumerator ExecuteBlinkWithBlur()
+    {
+        bool effectCompleted = false;
+        beautifyController.ExecuteBlinkWithBlur(() => effectCompleted = true);
+
+        yield return new WaitUntil(() => effectCompleted);
+    }
+
+    public void AddUIGroup(string groupName, List<GameObject> uiObjects)
+    {
+        if (!uiGroupsDict.ContainsKey(groupName))
+        {
+            uiGroupsDict[groupName] = new List<GameObject>();
+        }
+
+        uiGroupsDict[groupName].AddRange(uiObjects);
+        Debug.Log($"UI 그룹 '{groupName}' 추가됨: {uiObjects.Count}개 요소");
+    }
+
+    public void SetUIGroupActive(string groupName, bool active)
+    {
+        if (uiGroupsDict.ContainsKey(groupName))
+        {
+            foreach (var ui in uiGroupsDict[groupName])
+            {
+                if (ui != null)
+                {
+                    ui.SetActive(active);
+                }
+            }
+            Debug.Log($"UI 그룹 '{groupName}' 활성화 상태 변경: {active}");
+        }
+    }
+
+    public void SetCustomBlinkSettings(int count, float speed)
     {
         if (beautifyController != null)
         {
-            beautifyController.ResetAllEffects();
+            beautifyController.SetCustomBlinkSettings(count, speed);
         }
     }
-    public static void TriggerDialogEffect(string systemName)
+
+    public void SetCustomBlurValues(float startBlur, float endBlur)
     {
-        OnDialogSystemTriggered?.Invoke(systemName);
+        if (beautifyController != null)
+        {
+            beautifyController.SetCustomBlurValues(startBlur, endBlur);
+        }
     }
-    public static void RequestDialogEffect(string systemName, string effectType)
-    {
-        OnDialogEffectRequested?.Invoke(systemName, effectType);
-    }
+
     private void OnDestroy()
     {
-        OnConversationStarted -= HandleConversationStarted;
-        OnConversationEnded -= HandleConversationEnded;
-        OnDialogSystemTriggered -= HandleDialogSystemTrigger;
-        OnDialogEffectRequested -= HandleDialogEffectRequest;
+        BeautifyUIController.OnEffectStarted -= OnEffectStarted;
+        BeautifyUIController.OnEffectCompleted -= OnEffectCompleted;
     }
 }
+
+[System.Serializable]
+public struct UIGroup
+{
+    public string groupName;
+    public List<GameObject> uiObjects;
+}
+
+
