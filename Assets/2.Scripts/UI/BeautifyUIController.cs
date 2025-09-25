@@ -219,9 +219,9 @@ public class BeautifyUIController : MonoBehaviour
     {
         isBlinking = true;
         // 깜빡임 실행
-        ApplyStartBlur();
-        ApplyEndBlur();
+        yield return StartCoroutine(FadeBlur(startBlur, endBlur, 0.3f));
         yield return StartCoroutine(BlinkCoroutine());
+        
 
         // 깜빡임 완료 후 잠깐 대기
         yield return new WaitForSeconds(0.3f);
