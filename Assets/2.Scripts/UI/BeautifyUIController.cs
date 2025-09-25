@@ -212,18 +212,20 @@ public class BeautifyUIController : MonoBehaviour
     public void ExecuteBlinkWithBlur(System.Action onComplete = null)
     {
         OnEffectStarted?.Invoke(); // 이펙트 시작 알림
-        ApplyEndBlur();
         StartCoroutine(BlinkWithBlurCoroutine(onComplete));
     }
 
     private IEnumerator BlinkWithBlurCoroutine(System.Action onComplete = null)
     {
+        isBlinking = true;
         // 깜빡임 실행
+        ApplyStartBlur();
+        ApplyEndBlur();
         yield return StartCoroutine(BlinkCoroutine());
 
         // 깜빡임 완료 후 잠깐 대기
         yield return new WaitForSeconds(0.3f);
-
+        
         // 블러를 부드럽게 원래 값으로 복원
         yield return StartCoroutine(FadeBlur(beautify.blurIntensity.value, originalBlur, 0.5f));
 
